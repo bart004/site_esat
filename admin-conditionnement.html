@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administration Conditionnement — ESAT Alter Ego APAJH</title>
+  <link rel="stylesheet" href="styles_bl.css" />
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <div class="header-logo-mark">AE</div>
+    <div>
+      <div class="header-title">Administration Conditionnement</div>
+      <div class="header-subtitle">Ajouter catégories et vidéos</div>
+    </div>
+  </div>
+  <div class="header-logo">
+    <a href="index.html"><img src="logo-apajh.png" alt="Logo AP AJH" class="logo"></a>
+  </div>
+  <div class="header-actions">
+    <a href="conditionnement.html" class="btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Retour
+    </a>
+  </div>
+</header>
+
+<main>
+  <section class="page-intro">
+    <h1>Gestion du Conditionnement</h1>
+    <p>Ajoutez de nouvelles catégories (carreaux) et associez des vidéos tutoriels aux pages existantes.</p>
+  </section>
+
+  <!-- Form to add a new category -->
+  <div class="card" style="max-width:600px;margin:20px auto;">
+    <div class="card-header">
+      <h2>Ajouter une nouvelle catégorie</h2>
+    </div>
+    <div class="card-body">
+      <form id="addCategoryForm" style="display:grid;gap:16px;">
+        <div class="form-group">
+          <label for="catName">Nom de la catégorie</label>
+          <input type="text" id="catName" name="catName" placeholder="Ex. Nouvelle catégorie" required />
+        </div>
+        <div class="form-group">
+          <label for="catIcon">Icône (fichier PNG dans dossier picto)</label>
+          <input type="text" id="catIcon" name="catIcon" placeholder="nom du fichier (ex. nouvel-ico.png)" required />
+          <small>Placez le fichier dans le dossier <code>picto/</code></small>
+        </div>
+        <div class="form-group">
+          <label for="catTuto">Lien vers la page tutoriel associée (HTML)</label>
+          <input type="text" id="catTuto" name="catTuto" placeholder="balance-tuto.html" required />
+        </div>
+        <button type="submit" class="btn-primary">Ajouter la catégorie</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Section to add videos to existing tutorial pages -->
+  <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:30px;">
+    <!-- Balance -->
+    <div class="card" style="width:280px;">
+      <div class="card-header">
+        <h2>Vidéos pour Balance de cuisine</h2>
+      </div>
+      <div class="card-body">
+        <form id="addVideoBalance">
+          <div class="form-group">
+            <label>URL de la vidéo (YouTube, Vimeo, etc.)</label>
+            <input type="url" id="videoUrlBalance" placeholder="https://www.youtube.com/watch?v=..." required />
+          </div>
+          <button type="submit" class="btn-secondary">Ajouter vidéo</button>
+        </form>
+        <div id="videoListBalance" style="margin-top:12px;font-size:0.9rem;color:#555;"></div>
+      </div>
+    </div>
+
+    <!-- Montage -->
+    <div class="card" style="width:280px;">
+      <div class="card-header">
+        <h2>Vidéos pour Boîte fermée</h2>
+      </div>
+      <div class="card-body">
+        <form id="addVideoMontage">
+          <div class="form-group">
+            <label>URL de la vidéo (YouTube, Vimeo, etc.)</label>
+            <input type="url" id="videoUrlMontage" placeholder="https://www.youtube.com/watch?v=..." required />
+          </div>
+          <button type="submit" class="btn-secondary">Ajouter vidéo</button>
+        </form>
+        <div id="videoListMontage" style="margin-top:12px;font-size:0.9rem;color:#555;"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  // Simple client-side storage using localStorage for demo purposes
+  document.getElementById('addCategoryForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const name = document.getElementById('catName').value.trim();
+    const icon = document.getElementById('catIcon').value.trim();
+    const tuto = document.getElementById('catTuto').value.trim();
+    if (!name || !icon || !tuto) { alert('Veuillez remplir tous les champs'); return; }
+    const categories = JSON.parse(localStorage.getItem('conditionCategories') || '[]');
+    categories.push({name, icon, tuto});
+    localStorage.setItem('conditionCategories', JSON.stringify(categories));
+    alert('Catégorie ajoutée !');
+    this.reset();
+  });
+
+  function saveVideo(listId, url){
+    const list = JSON.parse(localStorage.getItem(listId) || '[]');
+    list.push(url);
+    localStorage.setItem(listId, JSON.stringify(list));
+    displayVideos(listId);
+  }
+
+  function displayVideos(listId){
+    const container = document.getElementById(listId);
+    const videos = JSON.parse(localStorage.getItem(listId) || '[]');
+    if(videos.length===0){
+      container.innerHTML = '<em>Aucune vidéo ajoutée.</em>';
+      return;
+    }
+    container.innerHTML = videos.map((v,i)=>`<div style="margin-bottom:8px;"><a href="${v}" target="_blank">${v}</a> <button onclick="deleteVideo('${listId}',${i})" style="background:none;border:none;color:red;font-size:0.8rem;">×</button></div>`).join('');
+  }
+
+  function deleteVideo(listId, index){
+    const list = JSON.parse(localStorage.getItem(listId) || '[]');
+    list.splice(index,1);
+    localStorage.setItem(listId, JSON.stringify(list));
+    displayVideos(listId);
+  }
+
+  document.getElementById('addVideoBalance').addEventListener('submit', function(e){
+    e.preventDefault();
+    const url = document.getElementById('videoUrlBalance').value.trim();
+    if(url){ saveVideo('videosBalance', url); this.reset(); displayVideos('videosBalance'); }
+  });
+  document.getElementById('addVideoMontage').addEventListener('submit', function(e){
+    e.preventDefault();
+    const url = document.getElementById('videoUrlMontage').value.trim();
+    if(url){ saveVideo('videosMontage', url); this.reset(); displayVideos('videosMontage'); }
+  });
+
+  // Initial display
+  displayVideos('videosBalance');
+  displayVideos('videosMontage');
+</script>
+
+</body>
+</html>

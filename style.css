@@ -1,0 +1,149 @@
+:root {
+  --vert-fonce: #4a5e28;
+  --vert-vif:   #8dc63f;
+  --orange:     #e8722a;
+  --jaune:      #f5d42e;
+  --rose:       #cc90aa;
+  --gris-texte: #555550;
+  --fond:       #f7f0e4;
+  --fond-carte: #efe4d2;
+  --blue:       #3b82f6;
+  --font-titres: "Source Serif 4", Georgia, serif;
+  --font-corps: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-corps);
+  color: var(--gris-texte);
+  background: var(--fond);
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  background: #ffffff;
+  border-bottom: 4px solid var(--vert-fonce);
+}
+
+.logo {
+  height: 60px;
+  width: auto;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--vert-fonce);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+header h1 {
+  font-family: var(--font-titres);
+  font-weight: 400;
+  font-size: 1.8rem;
+  color: var(--vert-fonce);
+  margin: 0;
+}
+
+main {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  max-width: 700px;
+  margin: 3rem auto;
+  padding: 0 1.5rem;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  aspect-ratio: 1 / 1;
+  background: #ffffff;
+  border: 3px solid var(--vert-fonce);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--gris-texte);
+  font-family: var(--font-corps);
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 1.5rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tile:nth-child(2) { border-color: var(--blue); }
+.tile:nth-child(3) { border-color: var(--jaune); }
+.tile:nth-child(4) { border-color: var(--rose); }
+
+.tile img {
+  width: 55%;
+  height: auto;
+}
+
+.tile:hover,
+.tile:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  outline: none;
+}
+
+.tile:focus-visible {
+  outline: 3px solid var(--vert-fonce);
+  outline-offset: 3px;
+}
+
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--fond-carte);
+  border-top: 4px solid var(--vert-fonce);
+  font-size: 0.95rem;
+}
+
+.contact h2 {
+  font-family: var(--font-titres);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--vert-fonce);
+  margin: 0 0 0.4rem;
+}
+
+.contact p {
+  margin: 0.2rem 0;
+}
+
+.contact a {
+  color: var(--gris-texte);
+}
+
+@media (max-width: 480px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+  header {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.header-logo {
+    flex: 1;
+    text-align: center;
+}

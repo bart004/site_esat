@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historique — Bons de Livraison APAJH</title>
+  <link rel="stylesheet" href="styles_bl.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase_bl.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <div class="header-logo-mark">AE</div>
+    <div>
+      <div class="header-title">ESAT Alter Ego APAJH</div>
+      <div class="header-subtitle">Historique des bons de livraison</div>
+    </div>
+  </div>
+  <div class="header-logo">
+    <a href="index.html"><img src="logo-apajh.png" alt="Logo AP AJH" class="logo"></a>
+  </div>
+  <div class="header-actions">
+    <a href="admin.html" class="btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Admin
+    </a>
+    <a href="bon-livraison.html" class="btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Retour
+    </a>
+    <a href="bon-livraison.html" class="btn-header-orange">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nouveau bon
+    </a>
+  </div>
+</header>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item"><span class="stat-value" id="statTotal">—</span><span class="stat-label">Bons au total</span></div>
+  <div class="stats-divider"></div>
+  <div class="stat-item"><span class="stat-value" id="statMois">—</span><span class="stat-label">Ce mois</span></div>
+  <div class="stats-divider"></div>
+  <div class="stat-item"><span class="stat-value" id="statArrivee">—</span><span class="stat-label">Articles reçus (total)</span></div>
+  <div class="stats-divider"></div>
+  <div class="stat-item"><span class="stat-value" id="statDepart">—</span><span class="stat-label">Articles partis (total)</span></div>
+</div>
+
+<!-- MAIN -->
+<main class="wide">
+  <div class="toolbar">
+    <h1>Tous les bons</h1>
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" class="search-input" placeholder="Chercher client, SENS…" />
+    </div>
+    <select class="filter-select" id="filterSens">
+      <option value="">Tous les SENS</option>
+      <option value="SM">SM</option>
+      <option value="MS">MS</option>
+      <option value="SS">SS</option>
+    </select>
+    <button class="btn-refresh" id="btnRefresh">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Rafraîchir
+    </button>
+  </div>
+
+  <div class="bons-grid" id="bonsGrid">
+    <div class="loading-state"><div class="spinner"></div><p>Chargement des bons…</p></div>
+  </div>
+</main>
+
+<!-- MODAL DETAIL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Bon de livraison</h2>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost-sm" id="modalCloseBtn">Fermer</button>
+      <button class="btn btn-orange" id="modalPdfBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Télécharger PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"><span id="toastMsg"></span></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  CONFIG (même structure que bon-livraison.html)
+// ═══════════════════════════════════════════════════
+const DEFAULT_ARTICLES = [
+  { label:"Veste de cuisine",           key:"veste_cuisine"   },
+  { label:"Pantalon de cuisine",        key:"pantalon"        },
+  { label:"Toque",                      key:"toque"           },
+  { label:"Chemin de table",            key:"chemin_table"    },
+  { label:"Serviette de table",         key:"serviette"       },
+  { label:"Torchon",                    key:"torchon"         },
+  { label:"Housse de chaise",           key:"housse_chaise"   },
+  { label:"Sac linge",                  key:"sac_linge"       },
+  { label:"Nappe 2/4 couverts",         key:"nappe_2_4"       },
+  { label:"Nappe 230/230 Beige (6/12)", key:"nappe_230_beige" },
+  { label:"Nappe 240/240 Blanc (6/12)", key:"nappe_240_blanc" },
+  { label:"Nappe 12/24 couverts",       key:"nappe_12_24"     },
+  { label:"Tablier de cuisine",         key:"tablier"         },
+];
+const DEFAULT_COLUMNS = [
+  { id:"qt_client", label:"Qté annoncée par le client", group:"client",  visible:true },
+  { id:"arrivee",   label:"Qté Arrivée ESAT",           group:"arrivee", visible:true },
+  { id:"depart",    label:"Qté Départ ESAT",            group:"depart",  visible:true },
+  { id:"bl",        label:"Qté BL",                     group:"bl",      visible:true },
+];
+
+function loadConfig() {
+  try {
+    const r = localStorage.getItem("apajh_config");
+    if (!r) return {};
+    const stored = JSON.parse(r);
+    // Migration : flush si ancienne structure
+    const hasAtelier    = (stored.generalFields||[]).some(f => f.id === "atelier");
+    const hasSensSelect = (stored.generalFields||[]).some(f => f.id === "sens" && f.type === "select");
+    const hasQtClient   = (stored.columns||[]).some(c => c.id === "qt_client");
+    if (hasAtelier || hasSensSelect || !hasQtClient) {
+      localStorage.removeItem("apajh_config");
+      return {};
+    }
+    return stored;
+  } catch { return {}; }
+}
+function getArticles() { const c=loadConfig(); return (c.articles||DEFAULT_ARTICLES).filter(a=>a.active!==false); }
+function getColumns()  { const c=loadConfig(); return (c.columns ||DEFAULT_COLUMNS ).filter(c=>c.visible&&c.id!=="code"); }
+
+// ═══════════════════════════════════════════════════
+//  CLIENTS — pour résoudre le bon modèle d'articles
+// ═══════════════════════════════════════════════════
+let allClientsHist = [];
+
+async function loadClientsHist() {
+  try {
+    const { data, error } = await getAllClients();
+    if (error) throw error;
+    allClientsHist = data || [];
+  } catch (err) {
+    console.error("Erreur chargement clients :", err);
+    allClientsHist = [];
+  }
+}
+
+/**
+ * Retourne la liste d'articles à utiliser pour CE bon :
+ * le modèle du client s'il est connu et non vide, sinon le modèle par défaut.
+ */
+function getArticlesForBon(bon) {
+  if (bon.client_id) {
+    const c = allClientsHist.find(c => c.id === bon.client_id);
+    if (c && Array.isArray(c.articles) && c.articles.length) {
+      return c.articles.filter(a => a.active !== false);
+    }
+  }
+  return getArticles();
+}
+
+function getClientTypeForBon(bon) {
+  if (!bon.client_id) return null;
+  const c = allClientsHist.find(c => c.id === bon.client_id);
+  return c?.type || null;
+}
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+let allBons = [];
+let currentBon = null;
+
+// ═══════════════════════════════════════════════════
+//  LOAD
+// ═══════════════════════════════════════════════════
+async function loadBons() {
+  document.getElementById("bonsGrid").innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Chargement…</p></div>`;
+  try {
+    const { data, error } = await getAllBons();
+    if (error) throw error;
+    allBons = data || [];
+    renderStats(allBons);
+    applyFilters();
+  } catch (err) {
+    document.getElementById("bonsGrid").innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h3>Erreur de chargement</h3><p>${err.message}</p>
+      </div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  STATS
+// ═══════════════════════════════════════════════════
+function renderStats(bons) {
+  const now = new Date();
+  const mois = bons.filter(b => { const d=new Date(b.created_at); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); }).length;
+  document.getElementById("statTotal").textContent   = bons.length;
+  document.getElementById("statMois").textContent    = mois;
+  document.getElementById("statArrivee").textContent = bons.reduce((s,b)=>s+(b.total_arrivee||0),0);
+  document.getElementById("statDepart").textContent  = bons.reduce((s,b)=>s+(b.total_depart||0),0);
+}
+
+// ═══════════════════════════════════════════════════
+//  FILTERS
+// ═══════════════════════════════════════════════════
+function applyFilters() {
+  const q    = document.getElementById("searchInput").value.toLowerCase();
+  const sens = document.getElementById("filterSens").value;
+  let filtered = allBons;
+  if (q)    filtered = filtered.filter(b => (b.client||"").toLowerCase().includes(q)||(b.sens||"").toLowerCase().includes(q));
+  if (sens) filtered = filtered.filter(b => b.sens === sens);
+  renderGrid(filtered);
+}
+document.getElementById("searchInput").addEventListener("input",  applyFilters);
+document.getElementById("filterSens").addEventListener("change",  applyFilters);
+document.getElementById("btnRefresh").addEventListener("click",   loadBons);
+
+// ═══════════════════════════════════════════════════
+//  RENDER GRID
+// ═══════════════════════════════════════════════════
+function renderGrid(bons) {
+  const grid = document.getElementById("bonsGrid");
+  if (!bons.length) {
+    grid.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+      <h3>Aucun bon trouvé</h3><p>Créez votre premier bon de livraison.</p>
+    </div>`;
+    return;
+  }
+  const cols = getColumns();
+  grid.innerHTML = bons.map(bon => {
+    const dateRec = bon.date_reception ? new Date(bon.date_reception).toLocaleDateString("fr-FR") : "—";
+    const dateLiv = bon.date_livraison ? new Date(bon.date_livraison).toLocaleDateString("fr-FR") : "—";
+    const created = new Date(bon.created_at).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"});
+    const num = String(allBons.length - allBons.findIndex(b=>b.id===bon.id)).padStart(4,"0");
+
+    // Build qty chips from visible columns
+    const chips = cols.map(col => {
+      const val = bon[`total_${col.id}`] || 0;
+      return `<div class="qty-chip ${col.group}">
+        <span class="qty-chip-val">${val}</span>
+        <span class="qty-chip-label">${col.label}</span>
+      </div>`;
+    }).join("");
+
+    return `<div class="bon-card">
+      <div class="bon-card-top">
+        <div>
+          <div class="bon-number">Bon #${num} · ${created}</div>
+          <div class="bon-client">${bon.client||"Client inconnu"}</div>
+          ${getClientTypeForBon(bon) ? `<div class="bon-atelier">${getClientTypeForBon(bon)}</div>` : ""}
+        </div>
+        <div class="sens-badge">${bon.sens||"—"}</div>
+      </div>
+      <div class="bon-card-meta">
+        <div class="meta-item"><span class="meta-label">Réception</span><span class="meta-value">${dateRec}</span></div>
+        <div class="meta-item"><span class="meta-label">Livraison</span><span class="meta-value">${dateLiv}</span></div>
+        ${bon.signature_controleur?`<div class="meta-item"><span class="meta-label">Contrôleur</span><span class="meta-value">${bon.signature_controleur}</span></div>`:""}
+      </div>
+      <div class="bon-card-quantities">${chips}</div>
+      <div class="bon-card-footer">
+        <button class="btn-card btn-card-view" onclick="openModal('${bon.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Voir
+        </button>
+        <button class="btn-card btn-card-pdf" onclick="downloadPDF('${bon.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF
+        </button>
+        <button class="btn-card btn-card-del" onclick="confirmDelete('${bon.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>Supprimer
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ═══════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════
+function openModal(id) {
+  const bon = allBons.find(b => b.id === id);
+  if (!bon) return;
+  currentBon = bon;
+  const dateRec = bon.date_reception ? new Date(bon.date_reception).toLocaleDateString("fr-FR") : "—";
+  const dateLiv = bon.date_livraison ? new Date(bon.date_livraison).toLocaleDateString("fr-FR") : "—";
+  document.getElementById("modalTitle").textContent = `${bon.client||"Bon"} — SENS : ${bon.sens||"—"}`;
+
+  const arts = getArticlesForBon(bon);
+  const cols = getColumns();
+  const colHeaders = cols.map(c=>`<th>${c.label.replace(/\n/g," ")}</th>`).join("");
+  const rows = arts.map(art => {
+    const cells = cols.map(col => `<td>${bon[`qt_${col.id}_${art.key}`]||0}</td>`).join("");
+    return `<tr><td>${art.label}</td>${cells}</tr>`;
+  }).filter((_, i) => {
+    const art = arts[i];
+    return cols.some(col => (bon[`qt_${col.id}_${art.key}`]||0) > 0);
+  }).join("");
+  const totCells = cols.map(col=>`<td>${bon[`total_${col.id}`]||0}</td>`).join("");
+
+  document.getElementById("modalBody").innerHTML = `
+    <div class="modal-info-grid">
+      <div class="modal-info-item"><label>Client</label><span>${bon.client||"—"}</span></div>
+      <div class="modal-info-item"><label>SENS</label><span>${bon.sens||"—"}</span></div>
+      <div class="modal-info-item"><label>Date réception</label><span>${dateRec}</span></div>
+      <div class="modal-info-item"><label>Date livraison</label><span>${dateLiv}</span></div>
+      <div class="modal-info-item"><label>Contrôleur</label><span>${bon.signature_controleur||"—"}</span></div>
+    </div>
+    <table class="modal-table">
+      <thead><tr><th style="text-align:left;">Article</th>${colHeaders}</tr></thead>
+      <tbody>${rows||'<tr><td colspan="'+(cols.length+1)+'" style="text-align:center;color:var(--grey-300);padding:20px;">Aucun article renseigné</td></tr>'}</tbody>
+      <tfoot><tr class="total-row"><td>TOTAL</td>${totCells}</tr></tfoot>
+    </table>`;
+  document.getElementById("modalOverlay").classList.add("open");
+}
+document.getElementById("modalClose").addEventListener("click",    closeModal);
+document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+document.getElementById("modalOverlay").addEventListener("click",  e => { if(e.target===e.currentTarget) closeModal(); });
+document.getElementById("modalPdfBtn").addEventListener("click",   () => { if(currentBon) downloadPDF(currentBon.id); });
+function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); currentBon=null; }
+
+// ═══════════════════════════════════════════════════
+//  PDF
+// ═══════════════════════════════════════════════════
+function downloadPDF(id) {
+  const bon = allBons.find(b=>b.id===id); if(!bon) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:"landscape", unit:"mm", format:"a4" });
+  const dateRec = bon.date_reception ? new Date(bon.date_reception).toLocaleDateString("fr-FR") : "—";
+  const dateLiv = bon.date_livraison ? new Date(bon.date_livraison).toLocaleDateString("fr-FR") : "—";
+  const cfg = loadConfig();
+  const title = (cfg.headerTitle||"ESAT Alter Ego APAJH") + " — " + (cfg.headerSubtitle||"Fiche de suivi du linge");
+
+  doc.setFillColor(44,62,45); doc.rect(0,0,297,22,"F");
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(13); doc.setFont("helvetica","bold");
+  doc.text(title, 10, 10);
+  doc.setFontSize(8.5); doc.setFont("helvetica","normal");
+  doc.text(`Client : ${bon.client||"—"}  |  SENS : ${bon.sens||"—"}  |  Réception : ${dateRec}  |  Livraison : ${dateLiv}  |  Contrôleur : ${bon.signature_controleur||"—"}`, 10, 17);
+
+  const arts = getArticlesForBon(bon);
+  const cols = getColumns();
+  const head = [["Article", ...cols.map(c=>c.label)]];
+  const body = arts.map(art => [art.label, ...cols.map(col=>bon[`qt_${col.id}_${art.key}`]||0)]);
+  body.push(["TOTAL", ...cols.map(col=>bon[`total_${col.id}`]||0)]);
+
+  doc.autoTable({ head, body, startY:26,
+    styles:{fontSize:9,cellPadding:3},
+    headStyles:{fillColor:[74,103,65],textColor:255,fontStyle:"bold"},
+    alternateRowStyles:{fillColor:[247,248,243]},
+    didParseCell:d=>{if(d.row.index===body.length-1){d.cell.styles.fillColor=[44,62,45];d.cell.styles.textColor=[255,255,255];d.cell.styles.fontStyle="bold";}}
+  });
+  doc.save(`bon-livraison_${bon.client||"client"}_${dateRec}.pdf`);
+  showToast("PDF téléchargé !");
+}
+
+// ═══════════════════════════════════════════════════
+//  DELETE
+// ═══════════════════════════════════════════════════
+async function confirmDelete(id) {
+  const bon = allBons.find(b=>b.id===id);
+  if (!confirm(`Supprimer définitivement le bon de ${bon?.client||"ce client"} ?`)) return;
+  try {
+    const { error } = await deleteBon(id);
+    if (error) throw error;
+    showToast("Bon supprimé.");
+    await loadBons();
+  } catch (err) { showToast("Erreur : " + err.message); }
+}
+
+// ═══════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 3000);
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT — migration config si ancienne version
+// ═══════════════════════════════════════════════════
+(function migrateConfig() {
+  try {
+    const raw = localStorage.getItem("apajh_config");
+    if (!raw) return;
+    const stored = JSON.parse(raw);
+    const hasAtelier    = (stored.generalFields||[]).some(f => f.id === "atelier");
+    const hasSensSelect = (stored.generalFields||[]).some(f => f.id === "sens" && f.type === "select");
+    const hasQtClient   = (stored.columns||[]).some(c => c.id === "qt_client");
+    if (hasAtelier || hasSensSelect || !hasQtClient) {
+      localStorage.removeItem("apajh_config");
+    }
+  } catch { localStorage.removeItem("apajh_config"); }
+})();
+
+loadClientsHist().then(loadBons);
+</script>
+</body>
+</html>

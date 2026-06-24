@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administration — ESAT Alter Ego APAJH</title>
+  <link rel="stylesheet" href="styles_bl.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase_bl.js"></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <div class="header-logo-mark">AE</div>
+    <div>
+      <div class="header-title">Administration</div>
+      <div class="header-subtitle">Configuration du bon de livraison</div>
+    </div>
+  </div>
+  <div class="header-logo">
+    <a href="index.html"><img src="logo-apajh.png" alt="Logo AP AJH" class="logo"></a>
+  </div>
+  <div class="header-actions">
+    <a href="bon-livraison.html" class="btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+      Bon de livraison
+    </a>
+    <a href="historique.html" class="btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><polyline points="12 7 12 12 15 15"/></svg>
+      Historique
+    </a>
+  </div>
+</header>
+
+<!-- LAYOUT -->
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <span class="sidebar-section-label">Clients</span>
+    <a class="sidebar-link active" data-panel="clients" onclick="switchPanel('clients')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Gestion des clients
+    </a>
+
+    <span class="sidebar-section-label">Formulaire</span>
+    <a class="sidebar-link" data-panel="articles" onclick="switchPanel('articles')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Modèle par défaut
+    </a>
+    <a class="sidebar-link" data-panel="colonnes" onclick="switchPanel('colonnes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+      Colonnes du tableau
+    </a>
+    <a class="sidebar-link" data-panel="champs" onclick="switchPanel('champs')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Champs généraux
+    </a>
+
+    <span class="sidebar-section-label">Apparence</span>
+    <a class="sidebar-link" data-panel="entete" onclick="switchPanel('entete')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+      En-tête du document
+    </a>
+
+    <span class="sidebar-section-label">Système</span>
+    <a class="sidebar-link" data-panel="export" onclick="switchPanel('export')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export / Import config
+    </a>
+    <a class="sidebar-link" data-panel="reset" onclick="switchPanel('reset')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Réinitialisation
+    </a>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="admin-content">
+
+    <!-- Preview banner -->
+    <div class="preview-banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      <div>
+        <h3>Prévisualiser le bon de livraison</h3>
+        <p>Les modifications sont appliquées en temps réel à la page de saisie.</p>
+      </div>
+      <a href="bon-livraison.html" target="_blank" class="btn-preview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Ouvrir
+      </a>
+    </div>
+
+    <!-- ═══ PANEL : CLIENTS ═══ -->
+    <div class="panel active" id="panel-clients">
+
+      <!-- Vue liste -->
+      <div id="clientsListView">
+        <h1>Gestion des clients</h1>
+        <p class="subtitle">Chaque client peut avoir son propre modèle d'articles (un restaurant n'a pas le même linge qu'un foyer). Sélectionnez un client dans le bon de livraison pour charger automatiquement son modèle.</p>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h2>Liste des clients</h2>
+          </div>
+          <div class="card-body">
+            <div class="clients-toolbar">
+              <div class="search-wrap" style="flex:1;">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="clientsSearchInput" class="search-input" placeholder="Rechercher un client par nom ou type…" />
+              </div>
+              <button class="btn btn-primary btn-sm" id="btnNewClient">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Nouveau client
+              </button>
+            </div>
+            <div id="clientsListContainer">
+              <div class="client-loading"><div class="spinner"></div><p>Chargement des clients…</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vue éditeur -->
+      <div id="clientsEditView" style="display:none;">
+        <div class="client-editor-header">
+          <button class="client-editor-back" id="btnBackToClientsList" title="Retour à la liste">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          </button>
+          <div>
+            <h1 id="clientEditorTitle" style="margin-bottom:2px;">Nouveau client</h1>
+            <p class="subtitle" style="margin-bottom:0;">Configurez le nom, le type et le modèle d'articles spécifique à ce client.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <h2>Informations</h2>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Nom du client *</label>
+                <input type="text" id="clientNameInput" placeholder="ex. Restaurant Le Provençal" />
+              </div>
+              <div class="form-group">
+                <label>Type / catégorie</label>
+                <input type="text" id="clientTypeInput" list="clientTypeSuggestions" placeholder="ex. Restauration, Foyer…" />
+                <datalist id="clientTypeSuggestions">
+                  <option value="Restauration"></option>
+                  <option value="Foyer"></option>
+                  <option value="Hôtellerie"></option>
+                  <option value="Évènementiel"></option>
+                  <option value="Bureau / Administratif"></option>
+                </datalist>
+              </div>
+              <div class="form-group span-2">
+                <label>Notes (optionnel)</label>
+                <textarea id="clientNotesInput" placeholder="Informations utiles, contact, instructions particulières…"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header orange">
+            <div class="card-header-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+            <h2>Modèle d'articles de ce client</h2>
+          </div>
+          <div class="card-body">
+            <div class="template-load-row">
+              <select id="templateSourceSelect"></select>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnLoadTemplate">Charger</button>
+            </div>
+            <div class="alert alert-info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Cliquez sur le nom ou le code pour le modifier. Utilisez le toggle pour activer/désactiver sans supprimer.</span>
+            </div>
+            <div class="drag-list" id="clientArticlesList"></div>
+            <button class="btn btn-secondary btn-sm" id="btnAddClientArticle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Ajouter un article
+            </button>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="btnSaveClient">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Enregistrer le client
+            </button>
+            <button class="btn btn-ghost-sm" id="btnCancelClientEdit" style="margin-left:auto;">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PANEL : ARTICLES (MODÈLE PAR DÉFAUT) ═══ -->
+    <div class="panel" id="panel-articles">
+      <h1>Modèle par défaut</h1>
+      <p class="subtitle">Cette liste sert de secours quand aucun client n'est sélectionné dans le bon de livraison, et de point de départ lors de la création d'un nouveau client. Faites glisser ⠿ pour changer l'ordre.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <h2>Liste des articles par défaut</h2>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>Cliquez sur le nom ou le code pour le modifier directement. Utilisez le toggle pour activer/désactiver sans supprimer.</span>
+          </div>
+          <div class="drag-list" id="articlesList"></div>
+          <button class="btn btn-secondary btn-sm" id="btnAddArticle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter un article
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PANEL : COLONNES ═══ -->
+    <div class="panel" id="panel-colonnes">
+      <h1>Colonnes du tableau</h1>
+      <p class="subtitle">Choisissez quelles colonnes apparaissent dans le bon de livraison, et si elles incluent un champ Observations.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+          </div>
+          <h2>Configuration des colonnes</h2>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-warning">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>La colonne <strong>Code BL</strong> est obligatoire et ne peut pas être supprimée. Les colonnes désactivées n'apparaîtront pas dans le PDF.</span>
+          </div>
+          <table class="col-config-table" id="colonnesTable">
+            <thead>
+              <tr>
+                <th>Colonne</th>
+                <th>Libellé affiché</th>
+                <th>Groupe</th>
+                <th>Observations</th>
+                <th style="text-align:center;">Visible</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="colonnesList"></tbody>
+          </table>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-secondary btn-sm" id="btnAddColonne">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter une colonne
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PANEL : CHAMPS GÉNÉRAUX ═══ -->
+    <div class="panel" id="panel-champs">
+      <h1>Champs généraux</h1>
+      <p class="subtitle">Modifiez les champs d'en-tête du bon (dates, client, SENS…). Vous pouvez en ajouter, supprimer ou réordonner.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </div>
+          <h2>Champs d'en-tête</h2>
+        </div>
+        <div class="card-body">
+          <div class="drag-list" id="champsList"></div>
+          <button class="btn btn-secondary btn-sm" id="btnAddChamp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter un champ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PANEL : EN-TÊTE ═══ -->
+    <div class="panel" id="panel-entete">
+      <h1>En-tête du document</h1>
+      <p class="subtitle">Personnalisez le titre et le sous-titre qui apparaissent dans le header et sur les PDF générés.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+          </div>
+          <h2>Identité du document</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label>Titre principal (structure / établissement)</label>
+              <input type="text" id="cfgHeaderTitle" placeholder="ESAT Alter Ego APAJH" />
+            </div>
+            <div class="form-group span-2">
+              <label>Sous-titre (type de document)</label>
+              <input type="text" id="cfgHeaderSubtitle" placeholder="Fiche de suivi du linge" />
+            </div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="btnSaveEntete">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PANEL : EXPORT / IMPORT ═══ -->
+    <div class="panel" id="panel-export">
+      <h1>Export / Import de configuration</h1>
+      <p class="subtitle">Sauvegardez votre configuration (modèle par défaut, colonnes, champs, en-tête) et la liste de vos clients dans un fichier JSON, ou restaurez-en une depuis un fichier existant.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+          <h2>Exporter la configuration</h2>
+        </div>
+        <div class="card-body">
+          <p style="font-size:14px;color:var(--text-mid);margin-bottom:16px;">Téléchargez un fichier <code>apajh_config.json</code> contenant tous vos réglages (modèle par défaut, colonnes, champs, en-tête) ainsi que tous vos clients et leurs modèles d'articles respectifs.</p>
+          <button class="btn btn-primary" id="btnExportConfig">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger apajh_config.json
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header orange">
+          <div class="card-header-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <h2>Importer une configuration</h2>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-warning" style="margin-bottom:16px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>L'import <strong>remplace</strong> le modèle par défaut, les colonnes, les champs et l'en-tête. Pour les clients, une confirmation séparée vous sera demandée et les clients existants du même nom seront mis à jour plutôt que dupliqués.</span>
+          </div>
+          <label class="btn btn-secondary" style="cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Choisir un fichier JSON
+            <input type="file" id="importFile" accept=".json" style="display:none;" />
+          </label>
+          <span id="importFileName" style="font-size:13px;color:var(--grey-500);margin-left:8px;">Aucun fichier choisi</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PANEL : RESET ═══ -->
+    <div class="panel" id="panel-reset">
+      <h1>Réinitialisation</h1>
+      <p class="subtitle">Remettez la configuration d'usine. Toutes vos modifications seront perdues.</p>
+
+      <div class="card">
+        <div class="card-header dark">
+          <div class="card-header-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </div>
+          <h2>Réinitialiser la configuration</h2>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-warning" style="margin-bottom:20px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Cette action est <strong>irréversible</strong> et remettra tous les articles, colonnes et champs aux valeurs par défaut.</span>
+          </div>
+          <button class="btn btn-danger" id="btnReset">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+            Réinitialiser la configuration
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /admin-content -->
+</div><!-- /admin-layout -->
+
+<!-- SAVE BAR -->
+<div class="save-bar" id="saveBar">
+  <span class="save-bar-msg"><strong>Modifications non enregistrées</strong> — cliquez sur Enregistrer pour les appliquer au bon de livraison.</span>
+  <div class="save-bar-actions">
+    <button class="btn btn-ghost-sm" id="btnCancelChanges" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);">Annuler</button>
+    <button class="btn btn-orange" id="btnSaveAll">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Enregistrer les modifications
+    </button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast">
+  <span class="toast-icon">✓</span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DEFAULT CONFIG
+// ═══════════════════════════════════════════════════
+const DEFAULT_CONFIG = {
+  headerTitle: "ESAT Alter Ego APAJH",
+  headerSubtitle: "Fiche de suivi du linge",
+  generalFields: [
+    { id:"dateReception", label:"Date de réception", type:"date", required:true,  span2:false },
+    { id:"dateLivraison", label:"Date de livraison", type:"date", required:true,  span2:false },
+    { id:"sens",          label:"SENS",              type:"text", required:false, span2:false, placeholder:"ex. SM" },
+    { id:"client",        label:"Client",            type:"text", required:false, span2:false, placeholder:"Nom du client" },
+  ],
+  articles: [
+    { label:"Veste de cuisine",           code:"VESTT", key:"veste_cuisine",   active:true },
+    { label:"Pantalon de cuisine",        code:"PANTT", key:"pantalon",        active:true },
+    { label:"Toque",                      code:"BON",   key:"toque",           active:true },
+    { label:"Chemin de table",            code:"NAP0",  key:"chemin_table",    active:true },
+    { label:"Serviette de table",         code:"STAB",  key:"serviette",       active:true },
+    { label:"Torchon",                    code:"TORC",  key:"torchon",         active:true },
+    { label:"Housse de chaise",           code:"HCHAI", key:"housse_chaise",   active:true },
+    { label:"Sac linge",                  code:"SL",    key:"sac_linge",       active:true },
+    { label:"Nappe 2/4 couverts",         code:"NAP1",  key:"nappe_2_4",       active:true },
+    { label:"Nappe 230/230 Beige (6/12)", code:"NAP2",  key:"nappe_230_beige", active:true },
+    { label:"Nappe 240/240 Blanc (6/12)", code:"NAP2",  key:"nappe_240_blanc", active:true },
+    { label:"Nappe 12/24 couverts",       code:"NAP3",  key:"nappe_12_24",     active:true },
+    { label:"Tablier de cuisine",         code:"TABL",  key:"tablier",         active:true },
+  ],
+  columns: [
+    { id:"code",      label:"Code BL",                     group:"info",    visible:true,  hasObs:false, locked:true },
+    { id:"qt_client", label:"Qté annoncée par le client",  group:"client",  visible:true,  hasObs:false },
+    { id:"arrivee",   label:"Qté Arrivée ESAT",            group:"arrivee", visible:true,  hasObs:true  },
+    { id:"depart",    label:"Qté Départ ESAT",             group:"depart",  visible:true,  hasObs:false },
+    { id:"bl",        label:"Qté BL",                      group:"bl",      visible:true,  hasObs:true  },
+  ]
+};
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+let CFG = {};
+let dirty = false;
+let savedSnapshot = "";
+
+function loadConfig() {
+  try { const r = localStorage.getItem("apajh_config"); return r ? JSON.parse(r) : JSON.parse(JSON.stringify(DEFAULT_CONFIG)); }
+  catch { return JSON.parse(JSON.stringify(DEFAULT_CONFIG)); }
+}
+function saveConfig() {
+  localStorage.setItem("apajh_config", JSON.stringify(CFG));
+  savedSnapshot = JSON.stringify(CFG);
+  dirty = false;
+  document.getElementById("saveBar").classList.remove("visible");
+  showToast("Configuration enregistrée !", "success");
+}
+function markDirty() {
+  dirty = true;
+  document.getElementById("saveBar").classList.add("visible");
+}
+function slugify(str) {
+  return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");
+}
+
+// ═══════════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════════
+function switchPanel(id) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".sidebar-link").forEach(l => l.classList.remove("active"));
+  document.getElementById(`panel-${id}`).classList.add("active");
+  document.querySelector(`[data-panel="${id}"]`).classList.add("active");
+}
+
+// ═══════════════════════════════════════════════════
+//  GESTION DES CLIENTS — liste, éditeur, CRUD Supabase
+// ═══════════════════════════════════════════════════
+let allClientsAdmin = [];
+let clientsAdminLoaded = false;
+let editingClient = null;        // { id, name, type, articles, notes }
+let editingClientIsNew = false;
+let clientEditorDirty = false;
+
+async function loadClientsAdmin() {
+  document.getElementById("clientsListContainer").innerHTML =
+    `<div class="client-loading"><div class="spinner"></div><p>Chargement des clients…</p></div>`;
+  try {
+    const { data, error } = await getAllClients();
+    if (error) throw error;
+    allClientsAdmin = data || [];
+    clientsAdminLoaded = true;
+    renderClientsList();
+  } catch (err) {
+    document.getElementById("clientsListContainer").innerHTML = `
+      <div class="clients-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h3>Erreur de chargement</h3><p>${err.message}</p>
+      </div>`;
+  }
+}
+
+function renderClientsList() {
+  const container = document.getElementById("clientsListContainer");
+  const q = (document.getElementById("clientsSearchInput")?.value || "").toLowerCase();
+  const filtered = q
+    ? allClientsAdmin.filter(c => c.name.toLowerCase().includes(q) || (c.type||"").toLowerCase().includes(q))
+    : allClientsAdmin;
+
+  if (!filtered.length) {
+    container.innerHTML = `
+      <div class="clients-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <h3>${allClientsAdmin.length ? "Aucun résultat" : "Aucun client enregistré"}</h3>
+        <p>${allClientsAdmin.length ? "Essayez un autre terme de recherche." : "Créez votre premier client pour lui associer un modèle d'articles."}</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="clients-table">
+      <thead><tr><th>Nom</th><th>Type</th><th>Articles</th><th style="text-align:right;">Actions</th></tr></thead>
+      <tbody>
+        ${filtered.map(c => `
+          <tr>
+            <td class="client-row-name">${c.name}</td>
+            <td>${c.type ? `<span class="client-row-type">${c.type}</span>` : '<span style="color:var(--grey-300);font-size:12px;">—</span>'}</td>
+            <td class="client-row-count">${(c.articles||[]).length} article${(c.articles||[]).length!==1?"s":""}</td>
+            <td>
+              <div class="client-row-actions">
+                <button class="edit-btn" onclick="openClientEditor('${c.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  <span>Modifier</span>
+                </button>
+                <button class="dup-btn" onclick="duplicateClient('${c.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <span>Dupliquer</span>
+                </button>
+                <button class="del-btn" onclick="deleteClientRow('${c.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                  <span>Supprimer</span>
+                </button>
+              </div>
+            </td>
+          </tr>`).join("")}
+      </tbody>
+    </table>`;
+}
+document.getElementById("clientsSearchInput")?.addEventListener("input", renderClientsList);
+document.getElementById("btnNewClient").addEventListener("click", () => openNewClientEditor());
+
+// ── Ouverture éditeur ────────────────────────────────
+function openNewClientEditor(prefillName) {
+  editingClient = { id: null, name: prefillName || "", type: "", articles: [], notes: "" };
+  editingClientIsNew = true;
+  clientEditorDirty = false;
+  showClientEditor();
+}
+
+function openClientEditor(id) {
+  const c = allClientsAdmin.find(c => c.id === id);
+  if (!c) return;
+  editingClient = {
+    id: c.id, name: c.name, type: c.type || "",
+    articles: JSON.parse(JSON.stringify(c.articles || [])),
+    notes: c.notes || ""
+  };
+  editingClientIsNew = false;
+  clientEditorDirty = false;
+  showClientEditor();
+}
+
+function showClientEditor() {
+  document.getElementById("clientsListView").style.display = "none";
+  document.getElementById("clientsEditView").style.display = "block";
+  document.getElementById("clientEditorTitle").textContent = editingClientIsNew ? "Nouveau client" : `Modifier « ${editingClient.name} »`;
+  document.getElementById("clientNameInput").value  = editingClient.name;
+  document.getElementById("clientTypeInput").value  = editingClient.type;
+  document.getElementById("clientNotesInput").value = editingClient.notes;
+
+  document.getElementById("clientNameInput").oninput  = () => { editingClient.name  = document.getElementById("clientNameInput").value;  clientEditorDirty = true; };
+  document.getElementById("clientTypeInput").oninput  = () => { editingClient.type  = document.getElementById("clientTypeInput").value;  clientEditorDirty = true; };
+  document.getElementById("clientNotesInput").oninput = () => { editingClient.notes = document.getElementById("clientNotesInput").value; clientEditorDirty = true; };
+
+  populateTemplateSourceSelect();
+  renderClientArticleEditor();
+}
+
+function renderClientArticleEditor() {
+  if (!editingClient) return;
+  renderArticleDragEditor("clientArticlesList", editingClient.articles, () => { clientEditorDirty = true; });
+}
+
+document.getElementById("btnAddClientArticle").addEventListener("click", () => {
+  if (!editingClient) return;
+  editingClient.articles.push({ label:"Nouvel article", code:"ART", key:`art_${Date.now()}`, active:true });
+  clientEditorDirty = true;
+  renderClientArticleEditor();
+  const items = document.querySelectorAll("#clientArticlesList .drag-item");
+  const last = items[items.length - 1];
+  last?.scrollIntoView({ behavior:"smooth" });
+  last?.querySelector("input")?.focus();
+});
+
+// ── Charger un modèle existant ───────────────────────
+function populateTemplateSourceSelect() {
+  const sel = document.getElementById("templateSourceSelect");
+  const others = allClientsAdmin.filter(c => c.id !== editingClient.id);
+  sel.innerHTML = `
+    <option value="">Démarrer depuis…</option>
+    <option value="__default__">Modèle par défaut (${(CFG.articles||[]).length} articles)</option>
+    ${others.map(c => `<option value="${c.id}">${c.name} (${(c.articles||[]).length} articles)</option>`).join("")}`;
+}
+
+document.getElementById("btnLoadTemplate").addEventListener("click", () => {
+  const val = document.getElementById("templateSourceSelect").value;
+  if (!val) return;
+  if (editingClient.articles.length > 0 && !confirm("Cela remplacera la liste d'articles actuelle de ce client. Continuer ?")) return;
+  if (val === "__default__") {
+    editingClient.articles = JSON.parse(JSON.stringify(CFG.articles || DEFAULT_CONFIG.articles));
+  } else {
+    const src = allClientsAdmin.find(c => c.id === val);
+    if (src) editingClient.articles = JSON.parse(JSON.stringify(src.articles || []));
+  }
+  clientEditorDirty = true;
+  renderClientArticleEditor();
+  showToast("Modèle chargé.", "success");
+});
+
+// ── Retour / Annulation ───────────────────────────────
+function closeClientEditor(skipConfirm) {
+  if (!skipConfirm && clientEditorDirty && !confirm("Annuler les modifications non enregistrées de ce client ?")) return;
+  editingClient = null;
+  clientEditorDirty = false;
+  document.getElementById("clientsEditView").style.display = "none";
+  document.getElementById("clientsListView").style.display = "block";
+}
+document.getElementById("btnBackToClientsList").addEventListener("click", () => closeClientEditor());
+document.getElementById("btnCancelClientEdit").addEventListener("click", () => closeClientEditor());
+
+// ── Enregistrement ────────────────────────────────────
+document.getElementById("btnSaveClient").addEventListener("click", async () => {
+  if (!editingClient.name.trim()) { showToast("Le nom du client est obligatoire.", "error"); return; }
+  const dupName = allClientsAdmin.find(c =>
+    c.name.toLowerCase() === editingClient.name.trim().toLowerCase() && c.id !== editingClient.id
+  );
+  if (dupName) { showToast("Un client porte déjà ce nom.", "error"); return; }
+
+  const btn = document.getElementById("btnSaveClient");
+  btn.disabled = true;
+  const payload = {
+    name: editingClient.name.trim(),
+    type: editingClient.type.trim() || null,
+    articles: editingClient.articles,
+    notes: editingClient.notes.trim() || null
+  };
+
+  try {
+    if (editingClientIsNew) {
+      const { error } = await saveClient(payload);
+      if (error) throw error;
+    } else {
+      const { error } = await updateClient(editingClient.id, payload);
+      if (error) throw error;
+    }
+    showToast(editingClientIsNew ? "Client créé !" : "Client mis à jour !", "success");
+    clientEditorDirty = false;
+    closeClientEditor(true);
+    await loadClientsAdmin();
+  } catch (err) {
+    showToast("Erreur : " + err.message, "error");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ── Duplication ────────────────────────────────────────
+async function duplicateClient(id) {
+  const c = allClientsAdmin.find(c => c.id === id);
+  if (!c) return;
+  let newName = prompt(`Nom du nouveau client (copie de "${c.name}") :`, `${c.name} (copie)`);
+  if (!newName || !newName.trim()) return;
+  newName = newName.trim();
+  if (allClientsAdmin.some(ac => ac.name.toLowerCase() === newName.toLowerCase())) {
+    showToast("Un client porte déjà ce nom.", "error"); return;
+  }
+  try {
+    const { error } = await saveClient({
+      name: newName, type: c.type,
+      articles: JSON.parse(JSON.stringify(c.articles || [])),
+      notes: c.notes
+    });
+    if (error) throw error;
+    showToast(`Client "${newName}" créé à partir de "${c.name}".`, "success");
+    await loadClientsAdmin();
+  } catch (err) { showToast("Erreur : " + err.message, "error"); }
+}
+
+// ── Suppression ────────────────────────────────────────
+async function deleteClientRow(id) {
+  const c = allClientsAdmin.find(c => c.id === id);
+  if (!confirm(`Supprimer définitivement le client "${c?.name||""}" ? Les bons déjà enregistrés pour ce client resteront consultables mais ne seront plus rattachés à un modèle.`)) return;
+  try {
+    const { error } = await deleteClient(id);
+    if (error) throw error;
+    showToast("Client supprimé.");
+    await loadClientsAdmin();
+  } catch (err) { showToast("Erreur : " + err.message, "error"); }
+}
+
+// ── Paramètres d'URL — ouverture directe depuis le bon de livraison ──
+function handleClientUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  const newClientName = params.get("newClient");
+  const editClientId  = params.get("editClient");
+  if (!newClientName && !editClientId) return;
+
+  switchPanel("clients");
+  if (newClientName) {
+    openNewClientEditor(newClientName);
+  } else if (editClientId) {
+    const tryOpen = () => {
+      const c = allClientsAdmin.find(c => c.id === editClientId);
+      if (c) openClientEditor(editClientId);
+      else if (!clientsAdminLoaded) setTimeout(tryOpen, 200);
+    };
+    tryOpen();
+  }
+  history.replaceState({}, "", window.location.pathname);
+}
+
+// ═══════════════════════════════════════════════════
+function renderArticleDragEditor(containerId, articlesArr, onMutate) {
+  const list = document.getElementById(containerId);
+  list.innerHTML = "";
+  articlesArr.forEach((art, i) => {
+    const el = document.createElement("div");
+    el.className = "drag-item" + (art.active===false ? " opacity-50" : "");
+    el.draggable = true;
+    el.dataset.idx = i;
+    el.innerHTML = `
+      <div class="drag-handle" title="Glisser pour réordonner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+      </div>
+      <div class="drag-item-label">
+        <input type="text" value="${art.label}" placeholder="Nom de l'article" data-field="label" data-idx="${i}" />
+      </div>
+      <div class="drag-item-code">
+        <input type="text" value="${art.code||''}" placeholder="CODE" data-field="code" data-idx="${i}" maxlength="8" />
+      </div>
+      <div class="drag-item-active" title="${art.active!==false?'Actif — cliquez pour désactiver':'Inactif — cliquez pour activer'}">
+        <label class="toggle-switch">
+          <input type="checkbox" ${art.active!==false?"checked":""} data-idx="${i}" class="generic-art-toggle" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="drag-item-actions">
+        <button title="Supprimer" data-idx="${i}" class="generic-art-delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>`;
+    list.appendChild(el);
+  });
+
+  list.querySelectorAll("input[data-field]").forEach(inp => {
+    inp.addEventListener("change", e => {
+      const idx = parseInt(e.target.dataset.idx);
+      const field = e.target.dataset.field;
+      articlesArr[idx][field] = e.target.value;
+      if (field === "label") articlesArr[idx].key = slugify(e.target.value);
+      onMutate?.();
+    });
+  });
+  list.querySelectorAll(".generic-art-toggle").forEach(cb => {
+    cb.addEventListener("change", e => {
+      articlesArr[parseInt(e.target.dataset.idx)].active = e.target.checked;
+      onMutate?.();
+    });
+  });
+  list.querySelectorAll(".generic-art-delete").forEach(btn => {
+    btn.addEventListener("click", e => {
+      const idx = parseInt(e.currentTarget.dataset.idx);
+      if (confirm(`Supprimer "${articlesArr[idx].label}" ?`)) {
+        articlesArr.splice(idx, 1);
+        onMutate?.();
+        renderArticleDragEditor(containerId, articlesArr, onMutate);
+      }
+    });
+  });
+
+  attachGenericDragDrop(containerId, articlesArr, () => renderArticleDragEditor(containerId, articlesArr, onMutate));
+}
+
+function attachGenericDragDrop(listId, arr, rerenderFn) {
+  const list = document.getElementById(listId);
+  let dragSrc = null;
+  list.querySelectorAll(".drag-item[draggable]").forEach(item => {
+    item.addEventListener("dragstart", e => { dragSrc = item; item.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; });
+    item.addEventListener("dragend",   () => { dragSrc?.classList.remove("dragging"); document.querySelectorAll(".drag-over").forEach(el => el.classList.remove("drag-over")); });
+    item.addEventListener("dragover",  e => { e.preventDefault(); item.classList.add("drag-over"); });
+    item.addEventListener("dragleave", () => item.classList.remove("drag-over"));
+    item.addEventListener("drop", e => {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === item) return;
+      const fromIdx = parseInt(dragSrc.dataset.idx);
+      const toIdx   = parseInt(item.dataset.idx);
+      const [moved] = arr.splice(fromIdx, 1);
+      arr.splice(toIdx, 0, moved);
+      rerenderFn();
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER ARTICLES — modèle par défaut
+// ═══════════════════════════════════════════════════
+function renderArticles() {
+  renderArticleDragEditor("articlesList", CFG.articles, markDirty);
+}
+
+document.getElementById("btnAddArticle").addEventListener("click", () => {
+  CFG.articles.push({ label:"Nouvel article", code:"ART", key:`art_${Date.now()}`, active:true });
+  markDirty();
+  renderArticles();
+  // Scroll to new item & focus
+  const items = document.querySelectorAll("#articlesList .drag-item");
+  const last = items[items.length - 1];
+  last?.scrollIntoView({ behavior:"smooth" });
+  last?.querySelector("input")?.focus();
+});
+
+// ═══════════════════════════════════════════════════
+//  RENDER COLONNES
+// ═══════════════════════════════════════════════════
+const GROUP_OPTIONS = ["info","client","arrivee","depart","bl","custom"];
+
+function renderColonnes() {
+  const tbody = document.getElementById("colonnesList");
+  tbody.innerHTML = "";
+  CFG.columns.forEach((col, i) => {
+    const tr = document.createElement("tr");
+    const groupOpts = GROUP_OPTIONS.map(g => `<option value="${g}" ${col.group===g?"selected":""}>${g}</option>`).join("");
+    const locked = col.locked;
+    tr.innerHTML = `
+      <td>
+        <span class="col-group-badge ${col.group}" style="font-family:monospace;">${col.id}</span>
+      </td>
+      <td>
+        <input type="text" value="${col.label}" data-idx="${i}" data-field="label" ${locked?"disabled":""} style="padding:7px 10px;font-size:13px;" />
+      </td>
+      <td>
+        <select data-idx="${i}" data-field="group" class="filter-select" style="padding:7px 10px;font-size:12px;" ${locked?"disabled":""}>
+          ${groupOpts}
+        </select>
+      </td>
+      <td style="text-align:center;">
+        <label class="toggle-switch">
+          <input type="checkbox" class="col-obs" data-idx="${i}" ${col.hasObs?"checked":""} ${locked?"disabled":""} />
+          <span class="toggle-slider"></span>
+        </label>
+      </td>
+      <td style="text-align:center;">
+        <label class="toggle-switch">
+          <input type="checkbox" class="col-visible" data-idx="${i}" ${col.visible!==false?"checked":""} ${locked?"disabled":""} />
+          <span class="toggle-slider"></span>
+        </label>
+      </td>
+      <td style="text-align:center;">
+        ${locked ? `<span style="font-size:11px;color:var(--grey-300);">Fixe</span>` :
+          `<button class="col-delete" data-idx="${i}" title="Supprimer" style="background:transparent;border:none;cursor:pointer;color:var(--grey-300);padding:4px;border-radius:4px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+           </button>`}
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  attachColonneEvents();
+}
+
+function attachColonneEvents() {
+  document.querySelectorAll("#colonnesList input[data-field], #colonnesList select[data-field]").forEach(inp => {
+    inp.addEventListener("change", e => {
+      const idx = parseInt(e.target.dataset.idx);
+      CFG.columns[idx][e.target.dataset.field] = e.target.value;
+      markDirty();
+      renderColonnes();
+    });
+  });
+  document.querySelectorAll(".col-obs").forEach(cb => {
+    cb.addEventListener("change", e => { CFG.columns[parseInt(e.target.dataset.idx)].hasObs = e.target.checked; markDirty(); });
+  });
+  document.querySelectorAll(".col-visible").forEach(cb => {
+    cb.addEventListener("change", e => { CFG.columns[parseInt(e.target.dataset.idx)].visible = e.target.checked; markDirty(); });
+  });
+  document.querySelectorAll(".col-delete").forEach(btn => {
+    btn.addEventListener("click", e => {
+      const idx = parseInt(e.currentTarget.dataset.idx);
+      if (confirm(`Supprimer la colonne "${CFG.columns[idx].label}" ?`)) {
+        CFG.columns.splice(idx, 1); markDirty(); renderColonnes();
+      }
+    });
+  });
+}
+
+document.getElementById("btnAddColonne").addEventListener("click", () => {
+  const id = `col_${Date.now()}`;
+  CFG.columns.push({ id, label:"Nouvelle colonne", group:"custom", visible:true, hasObs:false });
+  markDirty(); renderColonnes();
+});
+
+// ═══════════════════════════════════════════════════
+//  RENDER CHAMPS GÉNÉRAUX
+// ═══════════════════════════════════════════════════
+const FIELD_TYPES = ["text","date","number","select"];
+
+function renderChamps() {
+  const list = document.getElementById("champsList");
+  list.innerHTML = "";
+  (CFG.generalFields||[]).forEach((f, i) => {
+    const el = document.createElement("div");
+    el.className = "drag-item";
+    el.draggable = true;
+    el.dataset.idx = i;
+    const typeOpts = FIELD_TYPES.map(t=>`<option value="${t}" ${f.type===t?"selected":""}>${t}</option>`).join("");
+    el.innerHTML = `
+      <div class="drag-handle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+      </div>
+      <div class="drag-item-label">
+        <input type="text" value="${f.label}" placeholder="Libellé du champ" data-field="label" data-idx="${i}" />
+      </div>
+      <div style="width:110px;">
+        <select data-field="type" data-idx="${i}" class="filter-select" style="padding:6px 8px;font-size:12px;width:100%;">
+          ${typeOpts}
+        </select>
+      </div>
+      <div style="width:48px;text-align:center;" title="Occupe deux colonnes">
+        <label class="toggle-switch">
+          <input type="checkbox" class="champ-span2" data-idx="${i}" ${f.span2?"checked":""} />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="drag-item-active" title="${f.required?"Obligatoire":"Optionnel"}">
+        <label class="toggle-switch">
+          <input type="checkbox" class="champ-required" data-idx="${i}" ${f.required?"checked":""} />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="drag-item-actions">
+        <button title="Supprimer" data-idx="${i}" class="champ-delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        </button>
+      </div>`;
+    list.appendChild(el);
+  });
+  // Legend row
+  const legend = document.createElement("div");
+  legend.style.cssText = "display:flex;gap:12px;padding:6px 0;font-size:10px;color:var(--grey-300);text-transform:uppercase;letter-spacing:.5px;";
+  legend.innerHTML = `<span style="flex:1;margin-left:28px;">Libellé</span><span style="width:110px;">Type</span><span style="width:48px;text-align:center;">Pleine<br>largeur</span><span style="width:48px;text-align:center;">Oblig.</span><span style="width:28px;"></span>`;
+  list.prepend(legend);
+  attachChampEvents();
+  attachDragDrop("champsList", "generalFields");
+}
+
+function attachChampEvents() {
+  document.querySelectorAll("#champsList input[data-field], #champsList select[data-field]").forEach(inp => {
+    inp.addEventListener("change", e => {
+      const idx = parseInt(e.target.dataset.idx);
+      const field = e.target.dataset.field;
+      CFG.generalFields[idx][field] = e.target.value;
+      if (field==="label") CFG.generalFields[idx].id = slugify(e.target.value);
+      markDirty();
+    });
+  });
+  document.querySelectorAll(".champ-span2").forEach(cb => {
+    cb.addEventListener("change", e => { CFG.generalFields[parseInt(e.target.dataset.idx)].span2 = e.target.checked; markDirty(); });
+  });
+  document.querySelectorAll(".champ-required").forEach(cb => {
+    cb.addEventListener("change", e => { CFG.generalFields[parseInt(e.target.dataset.idx)].required = e.target.checked; markDirty(); });
+  });
+  document.querySelectorAll(".champ-delete").forEach(btn => {
+    btn.addEventListener("click", e => {
+      const idx = parseInt(e.currentTarget.dataset.idx);
+      if (confirm(`Supprimer le champ "${CFG.generalFields[idx].label}" ?`)) {
+        CFG.generalFields.splice(idx, 1); markDirty(); renderChamps();
+      }
+    });
+  });
+}
+
+document.getElementById("btnAddChamp").addEventListener("click", () => {
+  const id = `champ_${Date.now()}`;
+  CFG.generalFields.push({ id, label:"Nouveau champ", type:"text", required:false, span2:false, placeholder:"" });
+  markDirty(); renderChamps();
+  const items = document.querySelectorAll("#champsList .drag-item");
+  items[items.length-1]?.querySelector("input")?.focus();
+});
+
+// ═══════════════════════════════════════════════════
+//  EN-TÊTE
+// ═══════════════════════════════════════════════════
+function renderEntete() {
+  document.getElementById("cfgHeaderTitle").value    = CFG.headerTitle    || "";
+  document.getElementById("cfgHeaderSubtitle").value = CFG.headerSubtitle || "";
+}
+document.getElementById("btnSaveEntete").addEventListener("click", () => {
+  CFG.headerTitle    = document.getElementById("cfgHeaderTitle").value;
+  CFG.headerSubtitle = document.getElementById("cfgHeaderSubtitle").value;
+  markDirty(); saveConfig();
+});
+
+// ═══════════════════════════════════════════════════
+//  DRAG & DROP (réordonner)
+// ═══════════════════════════════════════════════════
+function attachDragDrop(listId, cfgKey) {
+  const list = document.getElementById(listId);
+  let dragSrc = null;
+
+  list.querySelectorAll(".drag-item[draggable]").forEach(item => {
+    item.addEventListener("dragstart", e => { dragSrc = item; item.classList.add("dragging"); e.dataTransfer.effectAllowed="move"; });
+    item.addEventListener("dragend",   ()  => { dragSrc?.classList.remove("dragging"); document.querySelectorAll(".drag-over").forEach(el=>el.classList.remove("drag-over")); });
+    item.addEventListener("dragover",  e  => { e.preventDefault(); item.classList.add("drag-over"); });
+    item.addEventListener("dragleave", ()  => item.classList.remove("drag-over"));
+    item.addEventListener("drop", e => {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === item) return;
+      const fromIdx = parseInt(dragSrc.dataset.idx);
+      const toIdx   = parseInt(item.dataset.idx);
+      const arr = CFG[cfgKey];
+      const [moved] = arr.splice(fromIdx, 1);
+      arr.splice(toIdx, 0, moved);
+      markDirty();
+      if (cfgKey==="articles")       renderArticles();
+      else if (cfgKey==="generalFields") renderChamps();
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  SAVE / CANCEL GLOBAL
+// ═══════════════════════════════════════════════════
+document.getElementById("btnSaveAll").addEventListener("click", saveConfig);
+document.getElementById("btnCancelChanges").addEventListener("click", () => {
+  if (!confirm("Annuler toutes les modifications non enregistrées ?")) return;
+  CFG = JSON.parse(savedSnapshot);
+  dirty = false;
+  document.getElementById("saveBar").classList.remove("visible");
+  renderAll();
+});
+
+// ═══════════════════════════════════════════════════
+//  EXPORT / IMPORT
+// ═══════════════════════════════════════════════════
+document.getElementById("btnExportConfig").addEventListener("click", async () => {
+  let clientsForExport = [];
+  try {
+    const { data } = await getAllClients();
+    clientsForExport = (data || []).map(c => ({ name: c.name, type: c.type, articles: c.articles, notes: c.notes }));
+  } catch { /* export sans clients si la requête échoue */ }
+
+  const exportPayload = { ...CFG, clients: clientsForExport };
+  const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type:"application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url; a.download = "apajh_config.json"; a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("importFile").addEventListener("change", e => {
+  const file = e.target.files[0]; if (!file) return;
+  document.getElementById("importFileName").textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!imported.articles || !imported.columns) throw new Error("Format invalide");
+      if (!confirm("Remplacer la configuration actuelle (modèle par défaut, colonnes, champs, en-tête) par ce fichier ?")) return;
+      CFG = {
+        headerTitle: imported.headerTitle, headerSubtitle: imported.headerSubtitle,
+        generalFields: imported.generalFields, articles: imported.articles, columns: imported.columns
+      };
+      saveConfig();
+      renderAll();
+      showToast("Configuration importée !", "success");
+
+      if (Array.isArray(imported.clients) && imported.clients.length) {
+        if (confirm(`Ce fichier contient aussi ${imported.clients.length} client(s) avec leur modèle d'articles. Voulez-vous les importer dans la base de données (les clients existants du même nom seront mis à jour) ?`)) {
+          await importClientsFromFile(imported.clients);
+        }
+      }
+    } catch (err) {
+      showToast("Fichier invalide : " + err.message, "error");
+    }
+  };
+  reader.readAsText(file);
+});
+
+async function importClientsFromFile(list) {
+  let countNew = 0, countUpdated = 0, countFailed = 0;
+  const { data: fresh } = await getAllClients();
+  const existingList = fresh || [];
+  for (const c of list) {
+    if (!c.name) continue;
+    const existing = existingList.find(ac => ac.name.toLowerCase() === c.name.toLowerCase());
+    try {
+      if (existing) {
+        await updateClient(existing.id, { type: c.type || null, articles: c.articles || [], notes: c.notes || null });
+        countUpdated++;
+      } else {
+        await saveClient({ name: c.name, type: c.type || null, articles: c.articles || [], notes: c.notes || null });
+        countNew++;
+      }
+    } catch (err) { console.error("Erreur import client", c.name, err); countFailed++; }
+  }
+  await loadClientsAdmin();
+  showToast(`${countNew} client(s) créé(s), ${countUpdated} mis à jour${countFailed ? `, ${countFailed} échec(s)` : ""}.`, countFailed ? "error" : "success");
+}
+
+// ═══════════════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════════════
+document.getElementById("btnReset").addEventListener("click", () => {
+  if (!confirm("Remettre la configuration par défaut ? Cette action est irréversible.")) return;
+  CFG = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+  saveConfig();
+  renderAll();
+  showToast("Configuration réinitialisée.", "success");
+});
+
+// ═══════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════
+function showToast(msg, type="success") {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.className = `show ${type}`;
+  t.querySelector(".toast-icon").textContent = type==="success"?"✓":"✕";
+  setTimeout(()=>t.className="", 3500);
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER ALL
+// ═══════════════════════════════════════════════════
+function renderAll() {
+  renderArticles();
+  renderColonnes();
+  renderChamps();
+  renderEntete();
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT — migration config si ancienne version
+// ═══════════════════════════════════════════════════
+(function migrateConfig() {
+  try {
+    const raw = localStorage.getItem("apajh_config");
+    if (!raw) return;
+    const stored = JSON.parse(raw);
+    const hasAtelier   = (stored.generalFields||[]).some(f => f.id === "atelier");
+    const hasSensSelect = (stored.generalFields||[]).some(f => f.id === "sens" && f.type === "select");
+    const hasQtClient  = (stored.columns||[]).some(c => c.id === "qt_client");
+    if (hasAtelier || hasSensSelect || !hasQtClient) {
+      localStorage.removeItem("apajh_config");
+    }
+  } catch { localStorage.removeItem("apajh_config"); }
+})();
+
+CFG = loadConfig();
+savedSnapshot = JSON.stringify(CFG);
+renderAll();
+loadClientsAdmin().then(handleClientUrlParams);
+
+// Warn on leaving with unsaved changes
+window.addEventListener("beforeunload", e => {
+  if (dirty) { e.preventDefault(); e.returnValue=""; }
+});
+</script>
+</body>
+</html>
