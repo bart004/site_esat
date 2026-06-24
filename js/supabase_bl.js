@@ -8,7 +8,7 @@
 //  2. Remplacez SUPABASE_URL et SUPABASE_ANON_KEY ci-dessous
 //  3. Exécutez le SQL de création de table (voir section SQL)
 //  4. Incluez ce fichier dans vos pages HTML :
-//     <script src="supabase.js"></script>
+//     <script src="supabase_bl.js"></script>
 //
 // ============================================================
 //  SQL À EXÉCUTER DANS SUPABASE (SQL Editor) :
@@ -115,8 +115,8 @@
 // ============================================================
 //  CONFIGURATION — À MODIFIER
 // ============================================================
-const SUPABASE_URL      = "https://VOTRE_PROJECT_ID.supabase.co";
-const SUPABASE_ANON_KEY = "VOTRE_ANON_KEY";
+const SUPABASE_URL      = "https://wpujooacxcpdfodeqfig.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_wmxT3UUX8L_oZzacjWPf1g_25kiW8du";
 
 // ============================================================
 //  CLIENT SUPABASE (via CDN, chargé dans le HTML)
