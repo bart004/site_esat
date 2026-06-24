@@ -454,6 +454,19 @@ function updateTotals() {
 // ═══════════════════════════════════════════════════
 //  COLLECT
 // ═══════════════════════════════════════════════════
+// Ligne ~457 — ajouter avant collectFormData
+const toSnakeCase = str => str.replace(/[A-Z]/g, c => `_${c.toLowerCase()}`);
+
+function collectFormData() {
+  const data = {
+    signature_controleur: document.getElementById("signatureControleur").value,
+    client_id: selectedClient ? selectedClient.id : null,
+  };
+  (CFG.generalFields || DEFAULT_CONFIG.generalFields).forEach(f => {
+    const el = document.getElementById(f.id);
+    if (el) data[f.dbKey ?? toSnakeCase(f.id)] = el.value; // ← ici
+});} // ... reste inchangé
+
 function collectFormData() {
   const data = {
     signature_controleur: document.getElementById("signatureControleur").value,
