@@ -40,6 +40,23 @@
 </main>
 
 <script>
+  function convertToYouTubeEmbed(url) {
+    // Handle YouTube watch URLs
+    const youtubeMatch = url.match(/^https?:\/\/(www\.)?youtube\.com\/watch\?v=([^&]+)/);
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[2]}`;
+    }
+
+    // Handle YouTube short URLs
+    const youtuBeMatch = url.match(/^https?:\/\/(www\.)?youtu\.be\/([^?]+)/);
+    if (youtuBeMatch) {
+      return `https://www.youtube.com/embed/${youtuBeMatch[2]}`;
+    }
+
+    // Return original URL if not a YouTube URL
+    return url;
+  }
+
   const videos = JSON.parse(localStorage.getItem('videosBalance') || '[]');
   const container = document.getElementById('videosContainer');
   if(videos.length===0){
@@ -47,7 +64,7 @@
   } else {
     container.innerHTML = videos.map(v => `
       <div style="background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);width:320px;">
-        <iframe width="320" height="180" src="${v}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <iframe width="320" height="180" src="${convertToYouTubeEmbed(v)}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
       </div>
     `).join('');
   }

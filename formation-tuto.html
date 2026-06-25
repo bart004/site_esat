@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutoriel Boîte fermée — ESAT Alter Ego APAJH</title>
+  <title>Tutoriel Formation — ESAT Alter Ego APAJH</title>
   <link rel="stylesheet" href="styles_bl.css" />
 </head>
 <body>
@@ -13,7 +13,7 @@
   <div class="header-left">
     <div class="header-logo-mark">AE</div>
     <div>
-      <div class="header-title">Boîte fermée</div>
+      <div class="header-title">Formation</div>
       <div class="header-subtitle">Tutoriels</div>
     </div>
   </div>
@@ -30,8 +30,8 @@
 
 <main>
   <section class="page-intro" style="text-align:center;margin-bottom:20px;">
-    <h1>Tutoriels pour la Boîte fermée</h1>
-    <p>Regardez les vidéos ci-dessous pour apprendre le montage de la boîte fermée.</p>
+    <h1>Tutoriels de Formation</h1>
+    <p>Regardez les vidéos ci-dessous pour apprendre les différentes formations proposées.</p>
   </section>
 
   <div id="videosContainer" style="display:flex;flex-wrap:wrap;justify-content:center;gap:20px;padding:0 20px;">
@@ -57,7 +57,7 @@
     return url;
   }
 
-  const videos = JSON.parse(localStorage.getItem('videosMontage') || '[]');
+  const videos = JSON.parse(localStorage.getItem('videosFormation') || '[]');
   const container = document.getElementById('videosContainer');
   if(videos.length===0){
     container.innerHTML = '<p style="text-align:center;color:#777;">Aucune vidéo disponible pour le moment.</p>';
