@@ -304,11 +304,11 @@ function openModal(id) {
   const cols = getColumns();
   const colHeaders = cols.map(c=>`<th>${c.label.replace(/\n/g," ")}</th>`).join("");
   const rows = arts.map(art => {
-    const cells = cols.map(col => `<td>${bon[`qt_${col.id}_${art.key}`]||0}</td>`).join("");
+    const cells = cols.map(col => `<td>${(bon[`qt_${col.group}`]||{})[art.key]||0}</td>`).join("");
     return `<tr><td>${art.label}</td>${cells}</tr>`;
   }).filter((_, i) => {
     const art = arts[i];
-    return cols.some(col => (bon[`qt_${col.id}_${art.key}`]||0) > 0);
+    return cols.some(col => ((bon[`qt_${col.group}`]||{})[art.key]||0) > 0);
   }).join("");
   const totCells = cols.map(col=>`<td>${bon[`total_${col.id}`]||0}</td>`).join("");
 
@@ -355,7 +355,7 @@ function downloadPDF(id) {
   const arts = getArticlesForBon(bon);
   const cols = getColumns();
   const head = [["Article", ...cols.map(c=>c.label)]];
-  const body = arts.map(art => [art.label, ...cols.map(col=>bon[`qt_${col.id}_${art.key}`]||0)]);
+  const body = arts.map(art => [art.label, ...cols.map(col=>(bon[`qt_${col.group}`]||{})[art.key]||0)]);
   body.push(["TOTAL", ...cols.map(col=>bon[`total_${col.id}`]||0)]);
 
   doc.autoTable({ head, body, startY:26,

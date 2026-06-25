@@ -462,25 +462,40 @@ function collectFormData() {
     signature_controleur: document.getElementById("signatureControleur").value,
     client_id: selectedClient ? selectedClient.id : null,
   };
+
   (CFG.generalFields || DEFAULT_CONFIG.generalFields).forEach(f => {
     const el = document.getElementById(f.id);
-    if (el) data[f.dbKey ?? toSnakeCase(f.id)] = el.value; // ← ici
-}); // ... reste inchangé
-
+    if (el) data[f.dbKey ?? toSnakeCase(f.id)] = el.value;
+  });
 
   const activeArticles = getActiveArticles();
-  const activeCols     = (CFG.columns  || DEFAULT_CONFIG.columns ).filter(c => c.visible && c.id !== "code");
+  const activeCols = (CFG.columns || DEFAULT_CONFIG.columns).filter(c => c.visible && c.id !== "code");
+
+  // Quantités → JSONB par section (group = "client" | "arrivee" | "depart" | "bl")
+  const qtByGroup = {};
+  activeCols.forEach(col => { qtByGroup[col.group] = {}; });
+
   document.querySelectorAll("#articlesBody tr").forEach((row, i) => {
     const art = activeArticles[i]; if (!art) return;
     const qtyInputs = row.querySelectorAll(".qty-input");
-    const obsInputs = row.querySelectorAll(".obs-input");
-    let qi = 0, oi = 0;
+    let qi = 0;
     activeCols.forEach(col => {
-      data[`qt_${col.id}_${art.key}`] = parseInt(qtyInputs[qi]?.value) || 0; qi++;
-      if (col.hasObs) { data[`obs_${col.id}_${art.key}`] = obsInputs[oi]?.value || ""; oi++; }
+      qtByGroup[col.group][art.key] = parseInt(qtyInputs[qi]?.value) || 0;
+      qi++;
     });
   });
+
+  activeCols.forEach(col => { data[`qt_${col.group}`] = qtByGroup[col.group]; });
+
+  // Totaux
   activeCols.forEach(col => { data[`total_${col.id}`] = getSum(`.qty-${col.id}`); });
+
+  // Observations (une par section, lignes non vides concaténées)
+  activeCols.filter(c => c.hasObs).forEach(col => {
+    data[`obs_${col.id}`] = [...document.querySelectorAll(`.obs-${col.id}`)]
+      .map(el => el.value.trim()).filter(Boolean).join(' | ') || "";
+  });
+
   return data;
 }
 
