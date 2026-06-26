@@ -137,7 +137,7 @@ main.wide { max-width: 1100px; }
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   border: 1px solid var(--grey-100);
-  overflow: hidden;
+  overflow: visible;
   margin-bottom: 24px;
 }
 .card-header {
