@@ -75,7 +75,7 @@
           </div>
           <button type="submit" class="btn-secondary">Ajouter vidéo</button>
         </form>
-        <div id="videoListBalance" style="margin-top:12px;font-size:0.9rem;color:#555;"></div>
+        <div id="videosBalance" style="margin-top:12px;font-size:0.9rem;color:#555;"></div>
       </div>
     </div>
 
@@ -93,7 +93,7 @@
           </div>
           <button type="submit" class="btn-secondary">Ajouter vidéo</button>
         </form>
-        <div id="videoListMontage" style="margin-top:12px;font-size:0.9rem;color:#555;"></div>
+        <div id="videosMontage" style="margin-top:12px;font-size:0.9rem;color:#555;"></div>
       </div>
     </div>
   </div>
@@ -141,12 +141,12 @@
   document.getElementById('addVideoBalance').addEventListener('submit', function(e){
     e.preventDefault();
     const url = document.getElementById('videoUrlBalance').value.trim();
-    if(url){ saveVideo('videosBalance', url); this.reset(); displayVideos('videosBalance'); }
+    if(url){ saveVideo('videosBalance', url); this.reset(); }
   });
   document.getElementById('addVideoMontage').addEventListener('submit', function(e){
     e.preventDefault();
     const url = document.getElementById('videoUrlMontage').value.trim();
-    if(url){ saveVideo('videosMontage', url); this.reset(); displayVideos('videosMontage'); }
+    if(url){ saveVideo('videosMontage', url); this.reset(); }
   });
 
   // Initial display
