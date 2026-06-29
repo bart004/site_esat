@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Administration Conditionnement — ESAT Alter Ego APAJH</title>
   <link rel="stylesheet" href="styles_bl.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
 </head>
 <body>
 
@@ -100,58 +102,112 @@
 </main>
 
 <script>
-  // Simple client-side storage using localStorage for demo purposes
-  document.getElementById('addCategoryForm').addEventListener('submit', function(e){
+  // ─── Supabase : lecture ───────────────────────────────────────────────────
+  async function loadVideos(category) {
+    const { data, error } = await supabaseClient
+      .from('tutorial_videos')
+      .select('id, url')
+      .eq('category', category)
+      .order('created_at');
+    if (error) throw error;
+    return data;
+  }
+
+  // ─── Supabase : écriture ──────────────────────────────────────────────────
+  async function insertVideo(category, url) {
+    const { error } = await supabaseClient
+      .from('tutorial_videos')
+      .insert({ category, url });
+    if (error) throw error;
+  }
+
+  async function removeVideo(id) {
+    const { error } = await supabaseClient
+      .from('tutorial_videos')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  }
+
+  // ─── Affichage de la liste des vidéos ─────────────────────────────────────
+  async function displayVideos(category, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '<em>Chargement…</em>';
+    try {
+      const videos = await loadVideos(category);
+      if (videos.length === 0) {
+        container.innerHTML = '<em>Aucune vidéo ajoutée.</em>';
+        return;
+      }
+      container.innerHTML = '';
+      videos.forEach(v => {
+        const row  = document.createElement('div');
+        row.style.cssText = 'margin-bottom:8px;display:flex;align-items:center;gap:8px;';
+
+        const link = document.createElement('a');
+        link.href        = v.url;
+        link.target      = '_blank';
+        link.textContent = v.url;
+        link.style.cssText = 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.9rem;';
+
+        const btn = document.createElement('button');
+        btn.textContent  = '×';
+        btn.style.cssText = 'background:none;border:none;color:red;font-size:1rem;cursor:pointer;flex-shrink:0;';
+        btn.addEventListener('click', async () => {
+          try {
+            await removeVideo(v.id);
+            await displayVideos(category, containerId);
+          } catch (err) {
+            alert('Erreur lors de la suppression : ' + err.message);
+          }
+        });
+
+        row.appendChild(link);
+        row.appendChild(btn);
+        container.appendChild(row);
+      });
+    } catch (err) {
+      container.innerHTML = `<em style="color:red;">Erreur : ${err.message}</em>`;
+    }
+  }
+
+  // ─── Soumission des formulaires de vidéos ─────────────────────────────────
+  function setupVideoForm(formId, inputId, category, containerId) {
+    document.getElementById(formId).addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const input = document.getElementById(inputId);
+      const url   = input.value.trim();
+      if (!url) return;
+      try {
+        await insertVideo(category, url);
+        input.value = '';
+        await displayVideos(category, containerId);
+      } catch (err) {
+        alert('Erreur lors de l\'ajout : ' + err.message);
+      }
+    });
+  }
+
+  // ─── Catégories (inchangé — localStorage) ─────────────────────────────────
+  document.getElementById('addCategoryForm').addEventListener('submit', function (e) {
     e.preventDefault();
     const name = document.getElementById('catName').value.trim();
     const icon = document.getElementById('catIcon').value.trim();
     const tuto = document.getElementById('catTuto').value.trim();
     if (!name || !icon || !tuto) { alert('Veuillez remplir tous les champs'); return; }
     const categories = JSON.parse(localStorage.getItem('conditionCategories') || '[]');
-    categories.push({name, icon, tuto});
+    categories.push({ name, icon, tuto });
     localStorage.setItem('conditionCategories', JSON.stringify(categories));
     alert('Catégorie ajoutée !');
     this.reset();
   });
 
-  function saveVideo(listId, url){
-    const list = JSON.parse(localStorage.getItem(listId) || '[]');
-    list.push(url);
-    localStorage.setItem(listId, JSON.stringify(list));
-    displayVideos(listId);
-  }
+  // ─── Initialisation ───────────────────────────────────────────────────────
+  setupVideoForm('addVideoBalance', 'videoUrlBalance', 'balance', 'videosBalance');
+  setupVideoForm('addVideoMontage', 'videoUrlMontage', 'montage', 'videosMontage');
 
-  function displayVideos(listId){
-    const container = document.getElementById(listId);
-    const videos = JSON.parse(localStorage.getItem(listId) || '[]');
-    if(videos.length===0){
-      container.innerHTML = '<em>Aucune vidéo ajoutée.</em>';
-      return;
-    }
-    container.innerHTML = videos.map((v,i)=>`<div style="margin-bottom:8px;"><a href="${v}" target="_blank">${v}</a> <button onclick="deleteVideo('${listId}',${i})" style="background:none;border:none;color:red;font-size:0.8rem;">×</button></div>`).join('');
-  }
-
-  function deleteVideo(listId, index){
-    const list = JSON.parse(localStorage.getItem(listId) || '[]');
-    list.splice(index,1);
-    localStorage.setItem(listId, JSON.stringify(list));
-    displayVideos(listId);
-  }
-
-  document.getElementById('addVideoBalance').addEventListener('submit', function(e){
-    e.preventDefault();
-    const url = document.getElementById('videoUrlBalance').value.trim();
-    if(url){ saveVideo('videosBalance', url); this.reset(); }
-  });
-  document.getElementById('addVideoMontage').addEventListener('submit', function(e){
-    e.preventDefault();
-    const url = document.getElementById('videoUrlMontage').value.trim();
-    if(url){ saveVideo('videosMontage', url); this.reset(); }
-  });
-
-  // Initial display
-  displayVideos('videosBalance');
-  displayVideos('videosMontage');
+  displayVideos('balance', 'videosBalance');
+  displayVideos('montage', 'videosMontage');
 </script>
 
 </body>
