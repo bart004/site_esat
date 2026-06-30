@@ -117,10 +117,10 @@ const DEFAULT_ARTICLES = [
   { label:"Tablier de cuisine",         key:"tablier"         },
 ];
 const DEFAULT_COLUMNS = [
-  { id:"qt_client", label:"Qté annoncée par le client", group:"client",  visible:true },
-  { id:"arrivee",   label:"Qté Arrivée ESAT",           group:"arrivee", visible:true },
-  { id:"depart",    label:"Qté Départ ESAT",            group:"depart",  visible:true },
-  { id:"bl",        label:"Qté BL",                     group:"bl",      visible:true },
+  { id:"qt_client", label:"Qté annoncée par le client", group:"client",  visible:true, hasObs:false },
+  { id:"arrivee",   label:"Qté Arrivée ESAT",           group:"arrivee", visible:true, hasObs:true  },
+  { id:"depart",    label:"Qté Départ ESAT",            group:"depart",  visible:true, hasObs:false },
+  { id:"bl",        label:"Qté BL",                     group:"bl",      visible:true, hasObs:true  },
 ];
 
 function loadConfig() {
@@ -323,6 +323,9 @@ function openModal(id) {
       <div class="modal-info-item"><label>Date réception</label><span>${dateRec}</span></div>
       <div class="modal-info-item"><label>Date livraison</label><span>${dateLiv}</span></div>
       <div class="modal-info-item"><label>Contrôleur</label><span>${bon.signature_controleur||"—"}</span></div>
+      ${cols.filter(c => c.hasObs && bon[`obs_${c.id}`]).map(c =>
+        `<div class="modal-info-item"><label>Observations — ${c.label.replace(/\n/g," ")}</label><span>${bon[`obs_${c.id}`]}</span></div>`
+      ).join("")}
     </div>
     <table class="modal-table">
       <thead><tr><th style="text-align:left;">Article</th>${colHeaders}</tr></thead>
@@ -368,6 +371,17 @@ function downloadPDF(id) {
     alternateRowStyles:{fillColor:[247,248,243]},
     didParseCell:d=>{if(d.row.index===body.length-1){d.cell.styles.fillColor=[44,62,45];d.cell.styles.textColor=[255,255,255];d.cell.styles.fontStyle="bold";}}
   });
+
+  let y = doc.lastAutoTable.finalY + 8;
+  cols.filter(c => c.hasObs && bon[`obs_${c.id}`]).forEach(col => {
+    doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.setTextColor(0,0,0);
+    doc.text(`Observations — ${col.label.replace(/\n/g," ")} :`, 10, y);
+    doc.setFont("helvetica","normal");
+    const lines = doc.splitTextToSize(bon[`obs_${col.id}`], 270);
+    doc.text(lines, 10, y + 5);
+    y += 5 + lines.length * 4 + 4;
+  });
+
   doc.save(`bon-livraison_${bon.client||"client"}_${dateRec}.pdf`);
   showToast("PDF téléchargé !");
 }
