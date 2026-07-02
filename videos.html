@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Conditionnement — ESAT Alter Ego APAJH</title>
   <link rel="stylesheet" href="styles_bl.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
 </head>
 <body>
 
@@ -21,7 +23,7 @@
     <a href="index.html"><img src="logo-apajh.png" alt="Logo AP AJH" class="logo"></a>
   </div>
   <div class="header-actions">
-    <a href="admin-conditionnement.html" class="btn-ghost">
+    <a href="admin_videos.html" class="btn-ghost">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
       Admin
     </a>
@@ -40,26 +42,18 @@
 </main>
 
 <script>
-  // Default categories if none saved
-  const defaultCategories = [
-    { name: 'Balance', icon: 'picto/balance de cuisine.png', page: 'balance-tuto.html' },
-    { name: 'Montage', icon: 'picto/boite fermée.png', page: 'montage-tuto.html' }
-  ];
-
-  // Load from localStorage
-  let categories = JSON.parse(localStorage.getItem('categoriesCondition'));
-  if (!categories || !Array.isArray(categories) || categories.length === 0) {
-    categories = [...defaultCategories];
-    localStorage.setItem('categoriesCondition', JSON.stringify(categories));
+  async function loadCategories() {
+    const { data, error } = await supabaseClient
+      .from('categories')
+      .select('name, icon, slug')
+      .order('created_at');
+    if (error) throw error;
+    return data;
   }
 
-  const container = document.getElementById('categoriesContainer');
-  // Clear container
-  container.innerHTML = '';
-
-  categories.forEach(cat => {
+  function renderCategory(cat, container) {
     const link = document.createElement('a');
-    link.href = cat.page;
+    link.href = `tuto.html?cat=${encodeURIComponent(cat.slug)}`;
     link.style.textDecoration = 'none';
     link.style.display = 'flex';
     link.style.flexDirection = 'column';
@@ -87,15 +81,32 @@
     title.style.fontSize = '1rem';
     title.style.fontWeight = '600';
     title.style.color = '#4a5e28';
-    title.textContent = cat.name;
-
-    // Fix typo: we set style.textAlign incorrectly; correct assignment:
     title.style.textAlign = 'center';
+    title.textContent = cat.name;
 
     link.appendChild(img);
     link.appendChild(title);
     container.appendChild(link);
-  });
+  }
+
+  async function render() {
+    const container = document.getElementById('categoriesContainer');
+    container.innerHTML = '<p style="text-align:center;color:#777;">Chargement…</p>';
+    try {
+      const categories = await loadCategories();
+      container.innerHTML = '';
+      if (!categories || categories.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:#777;">Aucune catégorie pour le moment.</p>';
+        return;
+      }
+      categories.forEach(cat => renderCategory(cat, container));
+    } catch (err) {
+      container.innerHTML = '<p style="text-align:center;color:red;">Erreur de chargement des catégories.</p>';
+      console.error(err);
+    }
+  }
+
+  render();
 </script>
 
 </body>

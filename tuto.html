@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tutoriel — ESAT Alter Ego APAJH</title>
+    <link rel="stylesheet" href="styles_bl.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="header-left">
+        <div class="header-logo-mark">AE</div>
+        <div>
+            <div class="header-title" id="categoryTitle">Tutoriel</div>
+            <div class="header-subtitle">Tutoriels</div>
+        </div>
+    </div>
+    <div class="header-logo">
+        <a href="index.html"><img src="logo-apajh.png" alt="Logo AP AJH" class="logo"></a>
+    </div>
+    <div class="header-actions">
+        <a href="videos.html" class="btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Retour
+        </a>
+    </div>
+</header>
+
+<main>
+    <section class="page-intro" style="text-align:center;margin-bottom:20px;">
+        <h1 id="categoryHeading">Tutoriels</h1>
+        <p>Regardez les vidéos ci-dessous.</p>
+    </section>
+
+    <div id="videosContainer" style="display:flex;flex-wrap:wrap;justify-content:center;gap:20px;padding:0 20px;">
+        <!-- Video iframes will be inserted here -->
+    </div>
+</main>
+
+<script>
+    function toEmbedUrl(url) {
+        const watch  = url.match(/youtube\.com\/watch\?v=([^&]+)/);
+        if (watch)  return `https://www.youtube-nocookie.com/embed/${watch[1]}?rel=0`;
+        const shorts = url.match(/youtube\.com\/shorts\/([^?]+)/);
+        if (shorts) return `https://www.youtube-nocookie.com/embed/${shorts[1]}?rel=0`;
+        const short  = url.match(/youtu\.be\/([^?]+)/);
+        if (short)  return `https://www.youtube-nocookie.com/embed/${short[1]}?rel=0`;
+        return url;
+    }
+
+    const slug = new URLSearchParams(location.search).get('cat');
+
+    async function loadCategoryName(slug) {
+        const { data, error } = await supabaseClient
+            .from('categories')
+            .select('name')
+            .eq('slug', slug)
+            .maybeSingle();
+        if (error) throw error;
+        return data ? data.name : null;
+    }
+
+    async function loadAndRender() {
+        const container = document.getElementById('videosContainer');
+
+        if (!slug) {
+            container.innerHTML = '<p style="text-align:center;color:red;">Catégorie manquante dans le lien.</p>';
+            return;
+        }
+
+        try {
+            const name = await loadCategoryName(slug);
+            if (name) {
+                document.title = `Tutoriel ${name} — ESAT Alter Ego APAJH`;
+                document.getElementById('categoryTitle').textContent = name;
+                document.getElementById('categoryHeading').textContent = `Tutoriels pour ${name}`;
+            }
+        } catch (err) {
+            console.error(err);
+        }
+
+        container.innerHTML = '<p style="text-align:center;color:#777;">Chargement…</p>';
+
+        const { data, error } = await supabaseClient
+            .from('tutorial_videos')
+            .select('url')
+            .eq('category', slug)
+            .order('created_at');
+
+        if (error) {
+            container.innerHTML = '<p style="text-align:center;color:red;">Erreur de chargement des vidéos.</p>';
+            console.error(error);
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="text-align:center;color:#777;">Aucune vidéo disponible pour le moment.</p>';
+            return;
+        }
+
+        container.innerHTML = data.map(({ url }) => `
+      <div style="background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);width:320px;">
+        <iframe width="320" height="180" src="${toEmbedUrl(url)}"
+          title="YouTube video player" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
+    `).join('');
+    }
+
+    loadAndRender();
+</script>
+
+</body>
+</html>

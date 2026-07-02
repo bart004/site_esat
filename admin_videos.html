@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Administration Conditionnement — ESAT Alter Ego APAJH</title>
+    <link rel="stylesheet" href="styles_bl.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="header-left">
+        <div class="header-logo-mark">AE</div>
+        <div>
+            <div class="header-title">Administration Conditionnement</div>
+            <div class="header-subtitle">Ajouter catégories et vidéos</div>
+        </div>
+    </div>
+    <div class="header-logo">
+        <a href="index.html"><img src="logo-apajh.png" alt="Logo AP AJH" class="logo"></a>
+    </div>
+    <div class="header-actions">
+        <a href="videos.html" class="btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Retour
+        </a>
+    </div>
+</header>
+
+<main>
+    <section class="page-intro">
+        <h1>Gestion du Conditionnement</h1>
+        <p>Ajoutez de nouvelles catégories (carreaux) et associez des vidéos tutoriels à chacune.</p>
+    </section>
+
+    <!-- Form to add a new category -->
+    <div class="card" style="max-width:600px;margin:20px auto;">
+        <div class="card-header">
+            <h2>Ajouter une nouvelle catégorie</h2>
+        </div>
+        <div class="card-body">
+            <form id="addCategoryForm" style="display:grid;gap:16px;">
+                <div class="form-group">
+                    <label for="catName">Nom de la catégorie</label>
+                    <input type="text" id="catName" name="catName" placeholder="Ex. Repassage" required />
+                </div>
+                <div class="form-group">
+                    <label for="catIcon">Icône (fichier PNG dans dossier picto)</label>
+                    <input type="text" id="catIcon" name="catIcon" placeholder="nom du fichier (ex. repassage.png)" required />
+                    <small>Placez le fichier dans le dossier <code>picto/</code></small>
+                </div>
+                <button type="submit" class="btn-primary">Ajouter la catégorie</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Une carte par catégorie, générée dynamiquement -->
+    <div id="categoriesVideoContainer" style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:30px;">
+    </div>
+</main>
+
+<script>
+    // ─── Supabase : catégories ─────────────────────────────────────────────────
+    async function loadCategories() {
+        const { data, error } = await supabaseClient
+            .from('categories')
+            .select('id, name, icon, slug')
+            .order('created_at');
+        if (error) throw error;
+        return data;
+    }
+
+    async function insertCategory(name, icon, slug) {
+        const { error } = await supabaseClient
+            .from('categories')
+            .insert({ name, icon, slug });
+        if (error) throw error;
+    }
+
+    async function removeCategory(id) {
+        const { error } = await supabaseClient
+            .from('categories')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+    }
+
+    function slugify(str) {
+        return str
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    }
+
+    // ─── Supabase : vidéos ──────────────────────────────────────────────────────
+    async function loadVideos(category) {
+        const { data, error } = await supabaseClient
+            .from('tutorial_videos')
+            .select('id, url')
+            .eq('category', category)
+            .order('created_at');
+        if (error) throw error;
+        return data;
+    }
+
+    async function insertVideo(category, url) {
+        const { error } = await supabaseClient
+            .from('tutorial_videos')
+            .insert({ category, url });
+        if (error) throw error;
+    }
+
+    async function removeVideo(id) {
+        const { error } = await supabaseClient
+            .from('tutorial_videos')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+    }
+
+    // ─── Affichage de la liste des vidéos d'une catégorie ──────────────────────
+    async function displayVideos(category, container) {
+        container.innerHTML = '<em>Chargement…</em>';
+        try {
+            const videos = await loadVideos(category);
+            if (videos.length === 0) {
+                container.innerHTML = '<em>Aucune vidéo ajoutée.</em>';
+                return;
+            }
+            container.innerHTML = '';
+            videos.forEach(v => {
+                const row = document.createElement('div');
+                row.style.cssText = 'margin-bottom:8px;display:flex;align-items:center;gap:8px;';
+
+                const link = document.createElement('a');
+                link.href        = v.url;
+                link.target      = '_blank';
+                link.textContent = v.url;
+                link.style.cssText = 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.9rem;';
+
+                const btn = document.createElement('button');
+                btn.textContent  = '×';
+                btn.style.cssText = 'background:none;border:none;color:red;font-size:1rem;cursor:pointer;flex-shrink:0;';
+                btn.addEventListener('click', async () => {
+                    try {
+                        await removeVideo(v.id);
+                        await displayVideos(category, container);
+                    } catch (err) {
+                        alert('Erreur lors de la suppression : ' + err.message);
+                    }
+                });
+
+                row.appendChild(link);
+                row.appendChild(btn);
+                container.appendChild(row);
+            });
+        } catch (err) {
+            container.innerHTML = `<em style="color:red;">Erreur : ${err.message}</em>`;
+        }
+    }
+
+    // ─── Construction d'une carte catégorie (formulaire vidéo + liste + suppression) ─
+    function buildCategoryCard(cat) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.width = '280px';
+
+        card.innerHTML = `
+            <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                <h2>${cat.name}</h2>
+                <button type="button" class="deleteCategoryBtn" title="Supprimer la catégorie" style="background:none;border:none;color:red;font-size:1.1rem;cursor:pointer;">×</button>
+            </div>
+            <div class="card-body">
+                <form class="addVideoForm">
+                    <div class="form-group">
+                        <label>URL de la vidéo (YouTube, Vimeo, etc.)</label>
+                        <input type="url" class="videoUrlInput" placeholder="https://www.youtube.com/watch?v=..." required />
+                        <small>Formats acceptés : URL complète YouTube ou lien court youtu.be</small>
+                    </div>
+                    <button type="submit" class="btn-secondary">Ajouter vidéo</button>
+                </form>
+                <div class="videosList" style="margin-top:12px;font-size:0.9rem;color:#555;"></div>
+            </div>
+        `;
+
+        const form          = card.querySelector('.addVideoForm');
+        const input          = card.querySelector('.videoUrlInput');
+        const listContainer  = card.querySelector('.videosList');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = input.value.trim();
+            if (!url) return;
+            try {
+                await insertVideo(cat.slug, url);
+                input.value = '';
+                await displayVideos(cat.slug, listContainer);
+            } catch (err) {
+                alert('Erreur lors de l\'ajout : ' + err.message);
+            }
+        });
+
+        card.querySelector('.deleteCategoryBtn').addEventListener('click', async () => {
+            if (!confirm(`Supprimer la catégorie "${cat.name}" ? Les vidéos associées resteront en base mais ne seront plus accessibles depuis le site.`)) return;
+            try {
+                await removeCategory(cat.id);
+                await renderCategories();
+            } catch (err) {
+                alert('Erreur lors de la suppression : ' + err.message);
+            }
+        });
+
+        displayVideos(cat.slug, listContainer);
+
+        return card;
+    }
+
+    // ─── Rendu de toutes les catégories ────────────────────────────────────────
+    async function renderCategories() {
+        const container = document.getElementById('categoriesVideoContainer');
+        container.innerHTML = '<em>Chargement des catégories…</em>';
+        try {
+            const categories = await loadCategories();
+            container.innerHTML = '';
+            if (categories.length === 0) {
+                container.innerHTML = '<em>Aucune catégorie pour le moment.</em>';
+                return;
+            }
+            categories.forEach(cat => container.appendChild(buildCategoryCard(cat)));
+        } catch (err) {
+            container.innerHTML = `<em style="color:red;">Erreur de chargement des catégories : ${err.message}</em>`;
+        }
+    }
+
+    // ─── Soumission du formulaire d'ajout de catégorie ─────────────────────────
+    document.getElementById('addCategoryForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const name     = document.getElementById('catName').value.trim();
+        const iconFile = document.getElementById('catIcon').value.trim();
+        if (!name || !iconFile) { alert('Veuillez remplir tous les champs'); return; }
+
+        const slug = slugify(name);
+        if (!slug) { alert('Nom de catégorie invalide.'); return; }
+
+        try {
+            const existing = await loadCategories();
+            if (existing.some(c => c.slug === slug)) {
+                alert('Une catégorie avec un nom équivalent existe déjà.');
+                return;
+            }
+            await insertCategory(name, `picto/${iconFile}`, slug);
+            this.reset();
+            await renderCategories();
+        } catch (err) {
+            alert('Erreur lors de l\'ajout : ' + err.message);
+        }
+    });
+
+    // ─── Initialisation ───────────────────────────────────────────────────────
+    renderCategories();
+</script>
+
+</body>
+</html>
