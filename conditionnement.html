@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Conditionnement — ESAT Alter Ego APAJH</title>
+  <title>Bon de Conditionnement — ESAT Alter Ego APAJH</title>
   <link rel="stylesheet" href="styles_bl.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase_conditionnement.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
@@ -13,90 +17,658 @@
   <div class="header-left">
     <div class="header-logo-mark">AE</div>
     <div>
-      <div class="header-title">Conditionnement</div>
-      <div class="header-subtitle">Gestion du conditionnement</div>
+      <div class="header-title" id="headerTitle">ESAT Alter Ego APAJH</div>
+      <div class="header-subtitle" id="headerSubtitle">Fiche de suivi conditionnement</div>
     </div>
   </div>
   <div class="header-logo">
     <a href="index.html"><img src="logo-apajh.png" alt="Logo AP AJH" class="logo"></a>
   </div>
   <div class="header-actions">
+    <a href="historique-conditionnement.html" class="btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><polyline points="12 7 12 12 15 15"/></svg>
+      Historique
+    </a>
     <a href="admin-conditionnement.html" class="btn-ghost">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
       Admin
     </a>
   </div>
 </header>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
+<!-- MAIN -->
 <main>
-  <section class="page-intro" style="text-align:center;margin-bottom:20px;">
-    <h1>Choisissez une catégorie</h1>
-    <p>Cliquez sur un carré pour accéder aux tutoriels correspondants.</p>
-  </section>
-
-  <div id="categoriesContainer" style="display:flex;flex-wrap:wrap;justify-content:center;gap:20px;padding:0 20px;">
-    <!-- Categories will be inserted here by JS -->
+  <div class="page-intro">
+    <h1>Nouveau bon de conditionnement</h1>
+    <p>Remplissez les informations de suivi du conditionnement, puis enregistrez le bon.</p>
   </div>
+
+  <form id="bonForm" novalidate>
+
+    <!-- Informations générales -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h2>Informations générales</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-grid" id="generalFields"></div>
+      </div>
+    </div>
+
+    <!-- Articles -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </div>
+        <h2>Articles — Quantités</h2>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div id="articlesNotice" class="alert alert-info" style="margin:20px 24px 0;display:none;"></div>
+        <div class="articles-table-wrap">
+          <table class="articles" id="articlesTable">
+            <thead id="articlesHead"></thead>
+            <tbody id="articlesBody"></tbody>
+            <tfoot><tr class="totals-row" id="totalsRow"></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="card-body" style="border-top:1px solid var(--grey-100);padding-top:20px;">
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <label>Nom et signature de la personne qui a contrôlé</label>
+            <input type="text" id="signatureControleur" placeholder="Nom complet du contrôleur" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="btnSave">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Enregistrer le bon
+        </button>
+        <button type="button" id="btnExportPdf" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Exporter PDF
+        </button>
+        <button type="button" id="btnReset" class="btn btn-ghost-sm" style="margin-left:auto;">Réinitialiser</button>
+      </div>
+    </div>
+
+  </form>
 </main>
 
-<script>
-  // Default categories if none saved
-  const defaultCategories = [
-    { name: 'Balance', icon: 'picto/balance de cuisine.png', page: 'balance-tuto.html' },
-    { name: 'Montage', icon: 'picto/boite fermée.png', page: 'montage-tuto.html' }
-  ];
+<!-- TOAST -->
+<div id="toast">
+  <span class="toast-icon">✓</span>
+  <span id="toastMsg"></span>
+</div>
 
-  // Load from localStorage
-  let categories = JSON.parse(localStorage.getItem('categoriesCondition'));
-  if (!categories || !Array.isArray(categories) || categories.length === 0) {
-    categories = [...defaultCategories];
-    localStorage.setItem('categoriesCondition', JSON.stringify(categories));
+<script>
+// ═══════════════════════════════════════════════════
+//  CONFIG PAR DÉFAUT (synchronisée avec admin-conditionnement.html)
+// ═══════════════════════════════════════════════════
+const DEFAULT_CONFIG = {
+  headerTitle: "ESAT Alter Ego APAJH",
+  headerSubtitle: "Fiche de suivi conditionnement",
+  generalFields: [
+    { id:"dateReception", label:"Date de réception", type:"date", required:true,  span2:false },
+    { id:"dateLivraison", label:"Date de livraison", type:"date", required:true,  span2:false },
+    { id:"client",        label:"Client",            type:"text", required:false, span2:false, placeholder:"Nom du client" },
+  ],
+  // Aucun article par défaut : la nomenclature conditionnement (produits,
+  // références, codes) dépend entièrement de vos clients. À configurer
+  // dans Admin > Modèle par défaut, ou directement par client.
+  articles: [],
+  columns: [
+    { id:"code",         label:"Code",                         group:"info",        visible:true,  hasObs:false, locked:true },
+    { id:"qt_client",    label:"Qté annoncée\npar le client",  group:"client",      visible:true,  hasObs:false },
+    { id:"reception",    label:"Qté Réception\nESAT",          group:"reception",   visible:true,  hasObs:true  },
+    { id:"conditionne",  label:"Qté Conditionnée",             group:"conditionne", visible:true,  hasObs:false },
+    { id:"bl",           label:"Qté BL",                       group:"bl",          visible:true,  hasObs:true  },
+  ]
+};
+
+const CONFIG_STORAGE_KEY = "apajh_config_conditionnement";
+
+function loadConfig() {
+  try {
+    const raw = localStorage.getItem(CONFIG_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : DEFAULT_CONFIG;
+  } catch { return DEFAULT_CONFIG; }
+}
+
+let CFG = {}; // réaffecté après migration
+
+// ═══════════════════════════════════════════════════
+//  BUILD HEADER
+// ═══════════════════════════════════════════════════
+function applyHeader() {
+  document.getElementById("headerTitle").textContent    = CFG.headerTitle    || DEFAULT_CONFIG.headerTitle;
+  document.getElementById("headerSubtitle").textContent = CFG.headerSubtitle || DEFAULT_CONFIG.headerSubtitle;
+}
+
+// ═══════════════════════════════════════════════════
+//  BUILD CHAMPS GÉNÉRAUX
+// ═══════════════════════════════════════════════════
+function buildGeneralFields() {
+  const container = document.getElementById("generalFields");
+  container.innerHTML = "";
+  (CFG.generalFields || DEFAULT_CONFIG.generalFields).forEach(f => {
+    const div = document.createElement("div");
+    div.className = "form-group" + (f.span2 ? " span-2" : "");
+    if (f.id === "client") {
+      div.classList.add("client-field-wrap");
+      div.innerHTML = `
+        <label>${f.label}</label>
+        <input type="text" id="client" autocomplete="off"
+          placeholder="${f.placeholder || 'Tapez pour rechercher un client…'}" />
+        <div class="client-dropdown" id="clientDropdown"></div>
+        <div class="client-badge" id="clientBadge" style="display:none;"></div>`;
+      div.style.position = "relative";
+    } else if (f.type === "select") {
+      const opts = (f.options || []).map(o => `<option value="${o}">${o}</option>`).join("");
+      div.innerHTML = `<label>${f.label}</label><select id="${f.id}"><option value="">— Sélectionner —</option>${opts}</select>`;
+    } else {
+      div.innerHTML = `<label>${f.label}</label><input type="${f.type}" id="${f.id}"
+        placeholder="${f.placeholder || ''}"
+        value="${f.defaultValue || ''}"
+        ${f.required ? "required" : ""} />`;
+    }
+    container.appendChild(div);
+  });
+  const dr = document.getElementById("dateReception");
+  if (dr && !dr.value) dr.value = new Date().toISOString().split("T")[0];
+  attachClientAutocomplete();
+}
+
+// ═══════════════════════════════════════════════════
+//  AUTOCOMPLÉTION CLIENT
+// ═══════════════════════════════════════════════════
+let allClients = [];
+let selectedClient = null;
+let editingId = null;
+let clientsLoaded = false;
+let clientHighlightIdx = -1;
+let clientMatches = [];
+
+async function loadClientsForAutocomplete() {
+  try {
+    const { data, error } = await getAllClients();
+    if (error) throw error;
+    allClients = data || [];
+  } catch (err) {
+    console.error("Erreur chargement clients :", err);
+    allClients = [];
+  } finally {
+    clientsLoaded = true;
+  }
+}
+
+let _clientOutsideClickHandler = null;
+
+function attachClientAutocomplete() {
+  const input = document.getElementById("client");
+  if (!input) return;
+
+  input.addEventListener("input", () => {
+    if (selectedClient && input.value !== selectedClient.name) {
+      selectedClient = null;
+      renderClientBadge();
+      buildTable();
+    }
+    openClientDropdown(input.value);
+  });
+  input.addEventListener("focus", () => openClientDropdown(input.value));
+  input.addEventListener("keydown", handleClientKeydown);
+
+  if (_clientOutsideClickHandler) document.removeEventListener("click", _clientOutsideClickHandler);
+  _clientOutsideClickHandler = e => { if (!e.target.closest(".client-field-wrap")) closeClientDropdown(); };
+  document.addEventListener("click", _clientOutsideClickHandler);
+
+  renderClientBadge();
+}
+
+function openClientDropdown(query) {
+  const dropdown = document.getElementById("clientDropdown");
+  if (!dropdown) return;
+  clientHighlightIdx = -1;
+
+  if (!clientsLoaded) {
+    dropdown.innerHTML = `<div class="client-dropdown-empty">Chargement des clients…</div>`;
+    dropdown.classList.add("open");
+    return;
   }
 
-  const container = document.getElementById('categoriesContainer');
-  // Clear container
-  container.innerHTML = '';
+  const q = (query || "").trim().toLowerCase();
+  clientMatches = q
+    ? allClients.filter(c => c.name.toLowerCase().includes(q))
+    : allClients;
 
-  categories.forEach(cat => {
-    const link = document.createElement('a');
-    link.href = cat.page;
-    link.style.textDecoration = 'none';
-    link.style.display = 'flex';
-    link.style.flexDirection = 'column';
-    link.style.alignItems = 'center';
-    link.style.background = '#fff';
-    link.style.borderRadius = '12px';
-    link.style.boxShadow = '0 2px 12px rgba(0,0,0,0.1)';
-    link.style.overflow = 'hidden';
-    link.style.width = '180px';
-    link.style.height = '200px';
-    link.style.transition = 'transform 0.2s';
-    link.onmouseover = () => { link.style.transform = 'translateY(-4px)'; };
-    link.onmouseout = () => { link.style.transform = 'translateY(0)'; };
+  let html = "";
+  if (clientMatches.length === 0) {
+    html += `<div class="client-dropdown-empty">Aucun client trouvé${q ? ` pour « ${q} »` : ""}.</div>`;
+  } else {
+    html += clientMatches.slice(0, 8).map((c, i) => `
+      <div class="client-dropdown-item" data-idx="${i}" onclick="selectClientByIdx(${i})">
+        <span class="client-dropdown-item-name">${c.name}</span>
+        <span class="client-dropdown-item-meta">
+          ${c.type ? `<span class="client-dropdown-item-type">${c.type}</span>` : ""}
+          <span class="client-dropdown-item-count">${(c.articles||[]).length} art.</span>
+        </span>
+      </div>`).join("");
+  }
+  if (q) {
+    html += `<a class="client-dropdown-new" href="admin-conditionnement.html?newClient=${encodeURIComponent(query)}" target="_blank">
+      + Créer « ${query} » comme nouveau client dans l'administration
+    </a>`;
+  }
+  dropdown.innerHTML = html;
+  dropdown.classList.add("open");
+}
 
-    const img = document.createElement('img');
-    img.src = cat.icon;
-    img.alt = cat.name;
-    img.style.width = '100%';
-    img.style.height = '120px';
-    img.style.objectFit = 'cover';
+function closeClientDropdown() {
+  document.getElementById("clientDropdown")?.classList.remove("open");
+  clientHighlightIdx = -1;
+}
 
-    const title = document.createElement('div');
-    title.style.padding = '10px';
-    title.style.width = '100%';
-    title.style.fontSize = '1rem';
-    title.style.fontWeight = '600';
-    title.style.color = '#4a5e28';
-    title.textContent = cat.name;
+function handleClientKeydown(e) {
+  const dropdown = document.getElementById("clientDropdown");
+  if (!dropdown || !dropdown.classList.contains("open")) return;
+  const items = dropdown.querySelectorAll(".client-dropdown-item");
+  if (!items.length) return;
 
-    // Fix typo: we set style.textAlign incorrectly; correct assignment:
-    title.style.textAlign = 'center';
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    clientHighlightIdx = Math.min(clientHighlightIdx + 1, items.length - 1);
+    highlightClientItem(items);
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    clientHighlightIdx = Math.max(clientHighlightIdx - 1, 0);
+    highlightClientItem(items);
+  } else if (e.key === "Enter") {
+    if (clientHighlightIdx >= 0) {
+      e.preventDefault();
+      selectClientByIdx(clientHighlightIdx);
+    }
+  } else if (e.key === "Escape") {
+    closeClientDropdown();
+  }
+}
 
-    link.appendChild(img);
-    link.appendChild(title);
-    container.appendChild(link);
+function highlightClientItem(items) {
+  items.forEach((el, i) => el.classList.toggle("highlighted", i === clientHighlightIdx));
+  items[clientHighlightIdx]?.scrollIntoView({ block: "nearest" });
+}
+
+function selectClientByIdx(idx) {
+  const c = clientMatches[idx];
+  if (!c) return;
+  selectedClient = c;
+  document.getElementById("client").value = c.name;
+  closeClientDropdown();
+  renderClientBadge();
+  buildTable();
+}
+
+function clearSelectedClient() {
+  selectedClient = null;
+  const input = document.getElementById("client");
+  if (input) { input.value = ""; input.focus(); }
+  renderClientBadge();
+  buildTable();
+}
+
+function renderClientBadge() {
+  const badge = document.getElementById("clientBadge");
+  if (!badge) return;
+  if (!selectedClient) {
+    badge.style.display = "none";
+    badge.innerHTML = "";
+    return;
+  }
+  const nbArticles = (selectedClient.articles || []).filter(a => a.active !== false).length;
+  const isEmpty = nbArticles === 0;
+  badge.style.display = "inline-flex";
+  badge.className = "client-badge" + (isEmpty ? " warning" : "");
+  badge.innerHTML = `
+    ${selectedClient.type ? `<span class="client-badge-type">${selectedClient.type}</span>` : ""}
+    <span>${isEmpty ? "⚠ Aucun article configuré pour ce client" : `Modèle chargé · ${nbArticles} article${nbArticles>1?"s":""}`}</span>
+    ${isEmpty ? `<a href="admin-conditionnement.html?editClient=${selectedClient.id}" target="_blank">Configurer</a>` : ""}
+    <button type="button" class="client-badge-clear" onclick="clearSelectedClient()" title="Changer de client">✕</button>`;
+}
+
+// ═══════════════════════════════════════════════════
+//  ARTICLES ACTIFS — selon client sélectionné ou modèle par défaut
+// ═══════════════════════════════════════════════════
+function getActiveArticles() {
+  if (selectedClient && Array.isArray(selectedClient.articles) && selectedClient.articles.length) {
+    return selectedClient.articles.filter(a => a.active !== false);
+  }
+  return (CFG.articles || DEFAULT_CONFIG.articles).filter(a => a.active !== false);
+}
+
+// ═══════════════════════════════════════════════════
+//  BUILD TABLE
+// ═══════════════════════════════════════════════════
+function buildTable() {
+  const activeArticles = getActiveArticles();
+  const activeCols     = (CFG.columns  || DEFAULT_CONFIG.columns ).filter(c => c.visible !== false);
+
+  // Notice contextuelle au-dessus du tableau
+  const notice = document.getElementById("articlesNotice");
+  if (notice) {
+    if (!selectedClient) {
+      notice.style.display = "flex";
+      notice.className = "alert alert-info";
+      notice.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Aucun client sélectionné — affichage du modèle d'articles par défaut. Sélectionnez un client existant dans le champ ci-dessus pour charger son modèle spécifique.</span>`;
+    } else if (activeArticles.length === 0) {
+      notice.style.display = "flex";
+      notice.className = "alert alert-warning";
+      notice.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Le client <strong>${selectedClient.name}</strong> n'a aucun article configuré. <a href="admin-conditionnement.html?editClient=${selectedClient.id}" target="_blank">Configurez son modèle dans l'administration</a>.</span>`;
+    } else {
+      notice.style.display = "none";
+    }
+  }
+
+  // Head
+  let thHTML = `<tr><th style="text-align:left;padding-left:16px;width:200px;">Article</th>`;
+  activeCols.forEach(col => {
+    const cls = `col-header-${col.group}`;
+    const lbl = col.label.replace(/\\n|\n/g, "<br>");
+    if (col.hasObs) {
+      thHTML += `<th class="${cls}" style="width:90px;">${lbl}</th><th class="${cls}" style="width:130px;">Observations</th>`;
+    } else {
+      thHTML += `<th class="${cls}" style="width:90px;">${lbl}</th>`;
+    }
   });
-</script>
+  thHTML += "</tr>";
+  document.getElementById("articlesHead").innerHTML = thHTML;
 
+  // Body
+  const tbody = document.getElementById("articlesBody");
+  tbody.innerHTML = "";
+  activeArticles.forEach((art, i) => {
+    const tr = document.createElement("tr");
+    let tdHTML = `<td style="padding-left:16px;">${art.label}</td>`;
+    activeCols.forEach(col => {
+      if (col.id === "code") {
+        tdHTML += `<td style="text-align:center;"><span class="code-badge">${art.code}</span></td>`;
+      } else {
+        tdHTML += `<td><input type="number" class="qty-input qty-${col.id}" min="0" placeholder="0" data-idx="${i}" /></td>`;
+        if (col.hasObs) tdHTML += `<td><input type="text" class="obs-input obs-${col.id}" placeholder="Observations…" /></td>`;
+      }
+    });
+    tr.innerHTML = tdHTML;
+    tbody.appendChild(tr);
+  });
+
+  // Totals
+  const tr = document.getElementById("totalsRow");
+  let totHTML = `<td colspan="2" style="padding-left:16px!important;">Total</td>`;
+  activeCols.filter(c => c.id !== "code").forEach(col => {
+    totHTML += `<td style="text-align:center;"><span class="total-badge" id="total-${col.id}">0</span></td>`;
+    if (col.hasObs) totHTML += `<td></td>`;
+  });
+  tr.innerHTML = totHTML;
+
+  attachQtyListeners();
+}
+
+// ═══════════════════════════════════════════════════
+//  TOTAUX
+// ═══════════════════════════════════════════════════
+function attachQtyListeners() {
+  document.querySelectorAll(".qty-input").forEach(inp => inp.addEventListener("input", updateTotals));
+  updateTotals();
+}
+function getSum(cls) {
+  return [...document.querySelectorAll(cls)].reduce((s, i) => s + (parseInt(i.value) || 0), 0);
+}
+function updateTotals() {
+  (CFG.columns || DEFAULT_CONFIG.columns).filter(c => c.visible && c.id !== "code").forEach(col => {
+    const el = document.getElementById(`total-${col.id}`);
+    if (el) el.textContent = getSum(`.qty-${col.id}`);
+  });
+  const all = document.querySelectorAll(".qty-reception, .qty-conditionne");
+  const filled = [...all].filter(i => i.value !== "").length;
+  document.getElementById("progressFill").style.width = all.length ? Math.min(100, Math.round((filled / all.length) * 100)) + "%" : "0%";
+}
+
+// ═══════════════════════════════════════════════════
+//  COLLECT
+// ═══════════════════════════════════════════════════
+// Ligne ~457 — ajouter avant collectFormData
+const toSnakeCase = str => str.replace(/[A-Z]/g, c => `_${c.toLowerCase()}`);
+
+function collectFormData() {
+  const data = {
+    signature_controleur: document.getElementById("signatureControleur").value,
+    client_id: selectedClient ? selectedClient.id : null,
+  };
+
+  (CFG.generalFields || DEFAULT_CONFIG.generalFields).forEach(f => {
+    const el = document.getElementById(f.id);
+    if (el) data[f.dbKey ?? toSnakeCase(f.id)] = el.value;
+  });
+
+  const activeArticles = getActiveArticles();
+  const activeCols = (CFG.columns || DEFAULT_CONFIG.columns).filter(c => c.visible && c.id !== "code");
+
+  // Quantités → JSONB par section (group = "client" | "reception" | "conditionne" | "bl")
+  const qtByGroup = {};
+  activeCols.forEach(col => { qtByGroup[col.group] = {}; });
+
+  document.querySelectorAll("#articlesBody tr").forEach((row, i) => {
+    const art = activeArticles[i]; if (!art) return;
+    const qtyInputs = row.querySelectorAll(".qty-input");
+    let qi = 0;
+    activeCols.forEach(col => {
+      qtByGroup[col.group][art.key] = parseInt(qtyInputs[qi]?.value) || 0;
+      qi++;
+    });
+  });
+
+  activeCols.forEach(col => { data[`qt_${col.group}`] = qtByGroup[col.group]; });
+
+  // Totaux
+  activeCols.forEach(col => { data[`total_${col.id}`] = getSum(`.qty-${col.id}`); });
+
+  // Observations (une par section, lignes non vides concaténées)
+  activeCols.filter(c => c.hasObs).forEach(col => {
+    data[`obs_${col.id}`] = [...document.querySelectorAll(`.obs-${col.id}`)]
+      .map(el => el.value.trim()).filter(Boolean).join(' | ') || "";
+  });
+
+  return data;
+}
+
+// ═══════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.className = `show ${type}`;
+  t.querySelector(".toast-icon").textContent = type === "success" ? "✓" : "✕";
+  setTimeout(() => t.className = "", 3500);
+}
+
+// ═══════════════════════════════════════════════════
+//  SAVE
+// ═══════════════════════════════════════════════════
+document.getElementById("bonForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = document.getElementById("btnSave");
+  btn.disabled = true;
+  btn.innerHTML = `<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Enregistrement…`;
+  try {
+    const data = collectFormData();
+    if (editingId !== null) {
+      const { error } = await updateBon(editingId, data);
+      if (error) throw error;
+      showToast("Bon mis à jour avec succès !", "success");
+      editingId = null;
+      // Optionally redirect to historique after a short delay
+      setTimeout(() => {
+        resetForm();
+        window.location.href = 'historique-conditionnement.html';
+      }, 1200);
+    } else {
+      const { error } = await saveBonConditionnement(data);
+      if (error) throw error;
+      showToast("Bon enregistré avec succès !", "success");
+      setTimeout(resetForm, 1200);
+    }
+  } catch (err) {
+    showToast("Erreur : " + (err.message || "impossible d'enregistrer."), "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Enregistrer le bon`;
+  }
+});
+
+// ═══════════════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════════════
+function resetForm() {
+  document.getElementById("bonForm").reset();
+  selectedClient = null;
+  buildGeneralFields();
+  buildTable();
+  document.getElementById("progressFill").style.width = "0%";
+}
+document.getElementById("btnReset").addEventListener("click", () => {
+  if (confirm("Réinitialiser tous les champs ?")) resetForm();
+});
+
+// ═══════════════════════════════════════════════════
+//  PDF
+// ═══════════════════════════════════════════════════
+document.getElementById("btnExportPdf").addEventListener("click", () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:"landscape", unit:"mm", format:"a4" });
+  const data = collectFormData();
+  const client  = data.client  || "—";
+  const dateRec = data.dateReception || "—";
+  const dateLiv = data.dateLivraison || "—";
+  const sig     = data.signature_controleur || "—";
+
+  doc.setFillColor(44,62,45); doc.rect(0,0,297,22,"F");
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(13); doc.setFont("helvetica","bold");
+  doc.text(`${CFG.headerTitle} — ${CFG.headerSubtitle}`, 10, 10);
+  doc.setFontSize(8.5); doc.setFont("helvetica","normal");
+  doc.text(`Client : ${client}  |  Réception : ${dateRec}  |  Livraison : ${dateLiv}`, 10, 17);
+
+  const activeArticles = getActiveArticles();
+  const activeCols     = (CFG.columns ||DEFAULT_CONFIG.columns ).filter(c=>c.visible&&c.id!=="code");
+  const head = [["Article","Code",...activeCols.flatMap(c=>c.hasObs?[c.label,"Observations"]:[c.label])]];
+  const rows = document.querySelectorAll("#articlesBody tr");
+  const body = activeArticles.map((art,i)=>{
+    const row=rows[i]; const qi=row?.querySelectorAll(".qty-input")||[]; const oi=row?.querySelectorAll(".obs-input")||[];
+    let qI=0,oI=0; const cells=[art.label,art.code];
+    activeCols.forEach(col=>{ cells.push(qi[qI]?.value||"0"); qI++; if(col.hasObs){cells.push(oi[oI]?.value||"");oI++;} });
+    return cells;
+  });
+  const totRow=["TOTAL",""]; activeCols.forEach(col=>{ totRow.push(getSum(`.qty-${col.id}`)); if(col.hasObs)totRow.push(col.id==="bl"?`Contrôleur: ${sig}`:""); }); body.push(totRow);
+  doc.autoTable({ head, body, startY:26,
+    styles:{fontSize:8.5,cellPadding:3},
+    headStyles:{fillColor:[74,103,65],textColor:255,fontStyle:"bold"},
+    alternateRowStyles:{fillColor:[247,248,243]},
+    didParseCell:d=>{if(d.row.index===body.length-1){d.cell.styles.fillColor=[44,62,45];d.cell.styles.textColor=[255,255,255];d.cell.styles.fontStyle="bold";}}
+  });
+  doc.save(`bon-conditionnement_${client}_${dateRec}.pdf`);
+});
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+CFG = loadConfig();
+applyHeader();
+buildGeneralFields();
+buildTable();
+async function loadBonForEdit(id) {
+  editingId = id;
+  const { data, error } = await getBonById(id);
+  if (error) {
+    showToast("Erreur de chargement");
+    return;
+  }
+  // Determine client
+  let selectedClientObj = null;
+  if (data.client_id) {
+    const client = await getClientById(data.client_id);
+    if (client.data) {
+      selectedClientObj = client.data;
+    }
+  }
+  selectedClient = selectedClientObj; // set global
+  // Rebuild UI with correct client
+  buildGeneralFields();
+  buildTable();
+
+  // Signaler visuellement le mode édition
+  document.querySelector(".page-intro h1").textContent = "Modifier le bon de conditionnement";
+  document.getElementById("btnSave").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Mettre à jour le bon`;
+
+  // Set form fields
+  document.getElementById("dateReception").value = data.date_reception || "";
+  document.getElementById("dateLivraison").value = data.date_livraison || "";
+  document.getElementById("signatureControleur").value = data.signature_controleur || "";
+  // Set client input
+  const clientInput = document.getElementById("client");
+  if (selectedClientObj) {
+    clientInput.value = selectedClientObj.name;
+    renderClientBadge();
+  } else {
+    clientInput.value = data.client || "";
+    renderClientBadge();
+  }
+  // Populate article quantities and observations
+  fillQuantitiesAndObservations(data);
+}
+
+function fillQuantitiesAndObservations(bon) {
+  const articles = getActiveArticles();
+  const activeCols = (CFG.columns || DEFAULT_CONFIG.columns).filter(c => c.visible !== false && c.id !== "code");
+  const obsCols = activeCols.filter(c => c.hasObs);
+
+  document.querySelectorAll("#articlesBody tr").forEach((row, rowIndex) => {
+    const art = articles[rowIndex];
+    if (!art) return;
+
+    // Quantités : accès direct au JSONB par groupe (qt_client, qt_reception, qt_conditionne, qt_bl)
+    const qtyInputs = row.querySelectorAll(".qty-input");
+    activeCols.forEach((col, colIndex) => {
+      const input = qtyInputs[colIndex];
+      if (input) input.value = (bon[`qt_${col.group}`] || {})[art.key] ?? 0;
+    });
+
+    // Observations : stockées en une chaîne concaténée par section → on remet tout sur la ligne 0
+    const obsInputs = row.querySelectorAll(".obs-input");
+    obsCols.forEach((col, obsIndex) => {
+      const input = obsInputs[obsIndex];
+      if (input) input.value = rowIndex === 0 ? (bon[`obs_${col.id}`] || "") : "";
+    });
+  });
+
+  updateTotals();
+}
+
+loadClientsForAutocomplete();
+const urlParams = new URLSearchParams(window.location.search);
+const editId = urlParams.get('edit');
+if (editId) {
+  loadBonForEdit(editId);
+}
+</script>
 </body>
 </html>

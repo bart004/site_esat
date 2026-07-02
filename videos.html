@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conditionnement — ESAT Alter Ego APAJH</title>
+  <link rel="stylesheet" href="styles_bl.css" />
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <div class="header-logo-mark">AE</div>
+    <div>
+      <div class="header-title">Conditionnement</div>
+      <div class="header-subtitle">Gestion du conditionnement</div>
+    </div>
+  </div>
+  <div class="header-logo">
+    <a href="index.html"><img src="logo-apajh.png" alt="Logo AP AJH" class="logo"></a>
+  </div>
+  <div class="header-actions">
+    <a href="admin-conditionnement.html" class="btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Admin
+    </a>
+  </div>
+</header>
+
+<main>
+  <section class="page-intro" style="text-align:center;margin-bottom:20px;">
+    <h1>Choisissez une catégorie</h1>
+    <p>Cliquez sur un carré pour accéder aux tutoriels correspondants.</p>
+  </section>
+
+  <div id="categoriesContainer" style="display:flex;flex-wrap:wrap;justify-content:center;gap:20px;padding:0 20px;">
+    <!-- Categories will be inserted here by JS -->
+  </div>
+</main>
+
+<script>
+  // Default categories if none saved
+  const defaultCategories = [
+    { name: 'Balance', icon: 'picto/balance de cuisine.png', page: 'balance-tuto.html' },
+    { name: 'Montage', icon: 'picto/boite fermée.png', page: 'montage-tuto.html' }
+  ];
+
+  // Load from localStorage
+  let categories = JSON.parse(localStorage.getItem('categoriesCondition'));
+  if (!categories || !Array.isArray(categories) || categories.length === 0) {
+    categories = [...defaultCategories];
+    localStorage.setItem('categoriesCondition', JSON.stringify(categories));
+  }
+
+  const container = document.getElementById('categoriesContainer');
+  // Clear container
+  container.innerHTML = '';
+
+  categories.forEach(cat => {
+    const link = document.createElement('a');
+    link.href = cat.page;
+    link.style.textDecoration = 'none';
+    link.style.display = 'flex';
+    link.style.flexDirection = 'column';
+    link.style.alignItems = 'center';
+    link.style.background = '#fff';
+    link.style.borderRadius = '12px';
+    link.style.boxShadow = '0 2px 12px rgba(0,0,0,0.1)';
+    link.style.overflow = 'hidden';
+    link.style.width = '180px';
+    link.style.height = '200px';
+    link.style.transition = 'transform 0.2s';
+    link.onmouseover = () => { link.style.transform = 'translateY(-4px)'; };
+    link.onmouseout = () => { link.style.transform = 'translateY(0)'; };
+
+    const img = document.createElement('img');
+    img.src = cat.icon;
+    img.alt = cat.name;
+    img.style.width = '100%';
+    img.style.height = '120px';
+    img.style.objectFit = 'cover';
+
+    const title = document.createElement('div');
+    title.style.padding = '10px';
+    title.style.width = '100%';
+    title.style.fontSize = '1rem';
+    title.style.fontWeight = '600';
+    title.style.color = '#4a5e28';
+    title.textContent = cat.name;
+
+    // Fix typo: we set style.textAlign incorrectly; correct assignment:
+    title.style.textAlign = 'center';
+
+    link.appendChild(img);
+    link.appendChild(title);
+    container.appendChild(link);
+  });
+</script>
+
+</body>
+</html>
